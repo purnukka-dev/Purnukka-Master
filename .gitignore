@@ -1,0 +1,14 @@
+# Ohitetaan kaikki oletuksena
+/*
+
+# Sallitaan vain Purnukan omat "äly-kansiot"
+!/mu-plugins/
+!/purnukka-config/
+!/.vscode/
+!/.gitignore
+!README.md
+
+# Jos mu-pluginsissa on muiden tiedostoja, ohitetaan ne
+/mu-plugins/*
+!/mu-plugins/purnukka-stack-core.php
+!/mu-plugins/purnukka-stack-limits.php

@@ -13,7 +13,7 @@
         "address": "Purnukantie 17, 71310 Vehmersalmi"
     },
     "stack_limits": {
-        "max_properties": 2,
+        "max_properties": 1,
         "ai_enabled": true,
         "package_level": "Partner"
     }
