@@ -1,16 +1,16 @@
 {
     "property_info": {
         "name": "Villa Purnukka",
-        "location": "Vehmersalmi, Kuopio",
+        "location": "Lakeside (Kuopio, Finland)",
         "brand_footer": "Powered by Purnukka"
     },
     "ai_rules": {
-        "check_in": "16:00 alkaen",
-        "check_out": "12:00 mennessä",
-        "sauna": "Rantasauna ja aitta kuuluvat vuokraan. Puut löytyvät liiteristä.",
-        "jacuzzi": "Ulkoporeamme on käyttövalmis. Älä muuta lämpötila-asetuksia.",
-        "max_guests": "15 henkilöä",
-        "address": "Purnukantie 17, 71310 Vehmersalmi"
+        "check_in": "From 16:00 (4 PM)",
+        "check_out": "By 12:00 (12 PM)",
+        "sauna": "Lakeside sauna and cabin included. Firewood is available in the woodshed.",
+        "jacuzzi": "Outdoor jacuzzi is ready for use. Please do not change the temperature settings.",
+        "max_guests": "15 persons",
+        "address": "Purnukantie 17, 71310 Vehmersalmi, Finland"
     },
     "stack_limits": {
         "max_properties": 1,
