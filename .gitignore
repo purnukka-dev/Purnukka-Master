@@ -1,14 +1,17 @@
-# Ohitetaan kaikki oletuksena
+# 1. Ignore everything by default
 /*
 
-# Sallitaan vain Purnukan omat "äly-kansiot"
-!/mu-plugins/
+# 2. Allow Purnukka-specific configuration and documentation
 !/purnukka-config/
 !/.vscode/
 !/.gitignore
 !README.md
 
-# Jos mu-pluginsissa on muiden tiedostoja, ohitetaan ne
+# 3. Allow mu-plugins folder but ignore its general content
+!/mu-plugins/
 /mu-plugins/*
+
+# 4. EXPLICITLY ALLOW ONLY THE CORE THREE PLUGINS
 !/mu-plugins/purnukka-stack-core.php
-!/mu-plugins/purnukka-stack-limits.php
+!/mu-plugins/purnukka-stack-access-control.php
+!/mu-plugins/purnukka-stack-ai-connector.php
