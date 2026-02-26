@@ -6,7 +6,9 @@
 !/.vscode/
 !/.gitignore
 !README.md
-
+# Sallitaan kansio, mutta KIELLETÄÄN sftp-yhteystiedot
+!/.vscode/
+.vscode/sftp.json
 # 3. Allow mu-plugins folder but ignore its general content
 !/mu-plugins/
 /mu-plugins/*
