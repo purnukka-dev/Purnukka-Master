@@ -1,24 +1,24 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Access Control (v0.3)
+ * Plugin Name: Purnukka Stack - Access Control (v0.4)
  * Description: Restricts the number of accommodation types and units based on context.json configuration.
- * Author: Purnukka Group Oy
+ * Version: 0.4
  */
 
 if ( !defined('ABSPATH') ) exit;
 
 add_action( 'admin_init', function() {
-    // 1. Path to the master configuration
+    // 1. Path to the configuration
     $config_path = WP_CONTENT_DIR . '/purnukka-config/context.json';
     if ( !file_exists( $config_path ) ) return;
 
     $config = json_decode( file_get_contents( $config_path ), true );
     
-    // Read the limit (default to 1 if not defined in JSON)
-    $max_allowed = (isset($config['stack_limits']['max_properties'])) ? (int)$config['stack_limits']['max_properties'] : 1;
-    $package_name = (isset($config['stack_limits']['package_level'])) ? $config['stack_limits']['package_level'] : 'Standard';
+    // Updated keys to match the new English JSON structure
+    $max_allowed = (isset($config['limits']['max_locations'])) ? (int)$config['limits']['max_locations'] : 1;
+    $tier_name = (isset($config['product']['tier'])) ? $config['product']['tier'] : 'Solo';
 
-    // 2. Count current published Room Types and individual Units
+    // 2. Count current published Room Types (Accommodation Types) and individual Units
     $count_types = (int) wp_count_posts( 'mphb_room_type' )->publish;
     $count_rooms = (int) wp_count_posts( 'mphb_room' )->publish;
 
@@ -29,13 +29,11 @@ add_action( 'admin_init', function() {
         remove_submenu_page( 'edit.php?post_type=mphb_room_type', 'post-new.php?post_type=mphb_room_type' );
         remove_submenu_page( 'edit.php?post_type=mphb_room_type', 'post-new.php?post_type=mphb_room' );
 
-        // Visual safety: Hide "Add New" buttons via CSS in the admin head
+        // Visual safety: Hide "Add New" buttons via CSS
         add_action( 'admin_head', function() {
             echo '<style>
-                /* Hide "Add New" buttons from the top of the pages */
                 .post-type-mphb_room_type .page-title-action, 
                 .post-type-mphb_room .page-title-action,
-                /* Hide menu links as a secondary measure */
                 #menu-posts-mphb_room_type li:nth-child(3),
                 #menu-posts-mphb_room_type li:nth-child(11) { 
                     display: none !important; 
@@ -43,12 +41,12 @@ add_action( 'admin_init', function() {
             </style>';
         });
 
-        // Hard block: Prevent direct URL access to the "Add New" screens
+        // Hard block: Prevent direct URL access to "Add New"
         $current_screen = get_current_screen();
         if ( $current_screen && $current_screen->base === 'post' && $current_screen->action === 'add' ) {
             if ( isset($_GET['post_type']) && ($_GET['post_type'] === 'mphb_room_type' || $_GET['post_type'] === 'mphb_room') ) {
                 wp_die( 
-                    '<strong>Purnukka Stack:</strong> Maximum number of properties reached for your <strong>' . esc_html($package_name) . '</strong> plan. Please upgrade your subscription to add more units.', 
+                    '<strong>Purnukka Stack:</strong> Maximum number of locations reached for your <strong>' . esc_html($tier_name) . '</strong> edition. Please upgrade your subscription to add more units.', 
                     'Access Denied', 
                     array('response' => 403) 
                 );
@@ -56,4 +54,3 @@ add_action( 'admin_init', function() {
         }
     }
 });
-// Access control verified 2026-02-28

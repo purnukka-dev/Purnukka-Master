@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.3)
- * Description: Handles white-labeling, admin footer, and dynamic CSS branding from context.json.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.4)
+ * Description: Handles white-labeling, admin footer, and dynamic CSS branding based on the English context.json.
  * Author: Purnukka Group Oy
- * Version: 0.3
+ * Version: 0.4
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -14,13 +14,13 @@ class PurnukkaStackCore {
     public function __construct() {
         $this->load_context();
         
-        // Admin-puolen brändäys
+        // Admin-side branding
         if (is_admin()) {
             add_filter('admin_footer_text', [$this, 'customize_admin_footer']);
             add_action('wp_before_admin_bar_render', [$this, 'remove_wp_logo'], 0);
         }
 
-        // Front-endin brändäys (Värit ja tyylit)
+        // Front-end and Editor branding
         add_action('wp_head', [$this, 'inject_dynamic_branding'], 10);
         add_action('enqueue_block_editor_assets', [$this, 'inject_editor_branding']);
     }
@@ -34,7 +34,7 @@ class PurnukkaStackCore {
     }
 
     /**
-     * Injektoi brändivärit CSS-muuttujina sekä front-endille että editoriin.
+     * Inject brand colors as CSS variables.
      */
     public function get_branding_css() {
         if (!$this->context || !isset($this->context['design_system']['colors'])) return '';
@@ -48,7 +48,7 @@ class PurnukkaStackCore {
             --purnukka-text: " . esc_attr($colors['text']) . ";
             --purnukka-accent: " . esc_attr($colors['accent']) . ";
         }
-        /* Esimerkki hyödyntämisestä: Booklium/Gutenberg nappien ylikirjoitus */
+        /* Override Booklium/Gutenberg buttons and backgrounds */
         .wp-block-button__link, .mphb-book-button {
             background-color: var(--purnukka-secondary) !important;
             color: var(--purnukka-text) !important;
@@ -66,13 +66,14 @@ class PurnukkaStackCore {
     }
 
     public function customize_admin_footer() {
-        $brand = $this->context['property_info']['brand_footer'] ?? 'Powered by Purnukka';
-        $package = $this->context['stack_limits']['package_level'] ?? 'Standard';
+        // Fallbacks if context keys are missing
+        $brand_name = $this->context['product']['name'] ?? 'Purnukka Stack';
+        $tier = $this->context['product']['tier'] ?? 'Solo';
 
         return sprintf(
-            '<strong>%s</strong> | <span style="color: #666;">Plan: %s</span>',
-            esc_html($brand),
-            esc_html($package)
+            '<strong>%s</strong> | <span style="color: #666;">Edition: %s</span>',
+            esc_html($brand_name),
+            esc_html($tier)
         );
     }
 
@@ -83,4 +84,4 @@ class PurnukkaStackCore {
 }
 
 new PurnukkaStackCore();
-// Deploy test 2026-02-28 12:38
+// Updated deployment for the new tier structure - 2026-02-28

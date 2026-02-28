@@ -1,26 +1,39 @@
 {
-    "property_info": {
-        "name": "Villa Purnukka",
-        "location": "Lakeside (Kuopio, Finland)",
-        "brand_footer": "Powered by Purnukka"
-    },
-    "ai_settings": {
-        "model": "Gemini 2.5 Flash",
-        "api_key_placeholder": "YOUR_GEMINI_API_KEY_HERE",
-        "system_instruction": "You are the Digital Host for Villa Purnukka. Answer guest questions politely in English based on the ai_rules provided. If you don't know the answer, ask them to contact the owner."
-    },
-    "ai_rules": {
-        "check_in": "From 15:00 (3 PM)",
-        "check_out": "By 11:00 (11 AM)",
-        "sauna": "Lakeside sauna and cabin included. Firewood is available in the woodshed.",
-        "jacuzzi": "Outdoor jacuzzi is ready for use. Please do not change the temperature settings.",
-        "max_guests": "99 persons",
-        "address": "Purnukantie 17, 71310 Vehmersalmi, Finland",
-        "last_deploy_test": "2026-02-28"
-    },
-    "stack_limits": {
-        "max_properties": 1,
-        "ai_enabled": true,
-        "package_level": "Partner"
+  "product": {
+    "name": "Purnukka Stack",
+    "tier": "Solo",
+    "version": "1.0.0"
+  },
+  "property_info": {
+    "name": "Villa Purnukka",
+    "address": "Purnukantie 17, 71310 Vehmersalmi, Finland",
+    "location": "Lakeside (Kuopio, Finland)",
+    "brand_footer": "Powered by Purnukka"
+  },
+  "limits": {
+    "max_locations": 1,
+    "max_guests": 99,
+    "ai_enabled": true
+  },
+  "ai_config": {
+    "model": "Gemini 2.5 Flash",
+    "role": "Digital Host for Villa Purnukka",
+    "tone": "Polite and helpful",
+    "system_instruction": "Answer guest questions based on the rules. If unsure, ask them to contact the owner."
+  },
+  "ai_rules": {
+    "check_in": "From 15:00 (3 PM)",
+    "check_out": "By 11:00 (11 AM)",
+    "sauna": "Lakeside sauna and cabin included. Firewood is available in the woodshed.",
+    "jacuzzi": "Outdoor jacuzzi is ready for use. Please do not change the temperature settings.",
+    "last_deploy_test": "2026-02-28"
+  },
+  "design_system": {
+    "colors": {
+      "primary": "#ffffff",
+      "secondary": "#007bff",
+      "text": "#333333",
+      "accent": "#ffcc00"
     }
+  }
 }
