@@ -1,0 +1,31 @@
+name: Deploy Purnukka Stack to Polar55
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  web-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v3
+
+    - name: 📂 Sync files to Server
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        # Päivitetty polku ilman aloituskauttaviivaa
+        server-dir: master.purnukka.com/wp-content/
+        local-dir: ./
+        # Lisätään tuki suojatulle FTP:lle (FTPS), kuten sftp.json-asetuksissasi
+        protocol: ftp
+        port: 21
+        exclude: |
+          **/.git*
+          **/.node_modules*
+          .vscode/
+          README.md

@@ -6,6 +6,10 @@
 !/.vscode/
 !/.gitignore
 !README.md
+# Sallitaan GitHub Actions -automaatiokansio
+!/.github/
+!/.github/workflows/
+!/.github/workflows/*
 # Sallitaan kansio, mutta KIELLETÄÄN sftp-yhteystiedot
 !/.vscode/
 .vscode/sftp.json
