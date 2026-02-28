@@ -17,8 +17,9 @@
 !/mu-plugins/
 /mu-plugins/*
 
-# 4. EXPLICITLY ALLOW ONLY THE CORE THREE PLUGINS
+# 4. EXPLICITLY ALLOW ONLY THE CORE FOUR PLUGINS
 !/mu-plugins/purnukka-stack-core.php
 !/mu-plugins/purnukka-stack-access-control.php
 !/mu-plugins/purnukka-stack-ai-connector.php
+!/mu-plugins/purnukka-stack-branding.php
 !/templates/

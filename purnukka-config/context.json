@@ -30,10 +30,10 @@
   },
   "design_system": {
     "colors": {
-      "primary": "#ffffff",
-      "secondary": "#007bff",
-      "text": "#333333",
-      "accent": "#ffcc00"
+      "primary": "#1a2b28",
+      "secondary": "#ffffff",
+      "text": "#ffffff",
+      "accent": "#b89b5e"
     }
   }
 }
