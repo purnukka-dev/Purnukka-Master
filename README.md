@@ -6,9 +6,8 @@ Professional hosting stack for short-term rental owners.
 - **Access Control**: Limits properties and menu access via `context.json`.
 - **AI Connector**: Connects the property rules to the AI engine.
 
-## Configuration
+## Configuration TEST
 All property-specific settings are managed in `/purnukka-config/context.json`.
-
 
 ---
 *Powered by Purnukka Group Oy*
