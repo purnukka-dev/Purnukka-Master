@@ -9,5 +9,6 @@ Professional hosting stack for short-term rental owners.
 ## Configuration
 All property-specific settings are managed in `/purnukka-config/context.json`.
 
+
 ---
 *Powered by Purnukka Group Oy*
