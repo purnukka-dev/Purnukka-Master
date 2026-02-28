@@ -23,7 +23,7 @@ jobs:
         local-dir: ./
         protocol: ftp
         port: 21
-        # Tarkennettu exclude-lista ilman ylimääräisiä tähtiä, jotka voivat sekoittaa polkuja
+        # Tarkennettus exclude-lista ilman ylimääräisiä tähtiä, jotka voivat sekoittaa polkuja
         exclude: |
           .git/**
           .github/**
