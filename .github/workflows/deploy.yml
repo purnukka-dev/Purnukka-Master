@@ -18,14 +18,18 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        # Päivitetty polku ilman aloituskauttaviivaa
         server-dir: master.purnukka.com/wp-content/
         local-dir: ./
-        # Lisätään tuki suojatulle FTP:lle (FTPS), kuten sftp.json-asetuksissasi
         protocol: ftp
         port: 21
+        # Määritellään tarkemmin estettävät tiedostot ja kansiot
         exclude: |
+          .git/
+          .github/
+          .vscode/
+          .gitignore
+          README.md
+          sftp.json
+          templates/
           **/.git*
           **/.node_modules*
-          .vscode/
-          README.md
