@@ -56,3 +56,4 @@ add_action( 'admin_init', function() {
         }
     }
 });
+// Access control verified 2026-02-28

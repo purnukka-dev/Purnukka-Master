@@ -15,7 +15,8 @@
         "sauna": "Lakeside sauna and cabin included. Firewood is available in the woodshed.",
         "jacuzzi": "Outdoor jacuzzi is ready for use. Please do not change the temperature settings.",
         "max_guests": "99 persons",
-        "address": "Purnukantie 17, 71310 Vehmersalmi, Finland"
+        "address": "Purnukantie 17, 71310 Vehmersalmi, Finland",
+        "last_deploy_test": "2026-02-28"
     },
     "stack_limits": {
         "max_properties": 1,

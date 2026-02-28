@@ -24,3 +24,4 @@ add_filter( 'mwai_ai_instructions', function( $instructions, $query ) {
 
     return $instructions;
 }, 999, 2 );
+// Connection verified
