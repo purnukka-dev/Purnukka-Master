@@ -22,7 +22,8 @@ jobs:
         local-dir: ./
         protocol: ftp
         port: 21
-        # Määritellään tarkemmin estettävät tiedostot ja kansiot
+        # Lisätty dry-run: false varmuuden vuoksi
+        dry-run: false
         exclude: |
           .git/
           .github/
