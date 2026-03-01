@@ -23,4 +23,5 @@
 !/mu-plugins/purnukka-stack-ai-connector.php
 !/mu-plugins/purnukka-stack-branding.php
 !/mu-plugins/purnukka-stack-checkout-logic.php
+!/mu-plugins/purnukka-stack-tax-controller.php
 !/templates/

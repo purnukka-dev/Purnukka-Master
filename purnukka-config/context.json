@@ -2,13 +2,31 @@
   "product": {
     "name": "Purnukka Stack",
     "tier": "Solo",
-    "version": "1.0.0"
+    "version": "1.2.0"
   },
   "property_info": {
     "name": "Villa Purnukka",
     "address": "Purnukantie 17, 71310 Vehmersalmi, Finland",
     "location": "Lakeside (Kuopio, Finland)",
     "brand_footer": "Powered by Purnukka"
+  },
+  "tax_settings": {
+    "default_rate_class": "standard",
+    "default_rate_percent": 25.5,
+    "categories": {
+      "stay": {
+        "percent": 10.0,
+        "wc_tax_class": "vat-10-stay"
+      },
+      "extras": {
+        "percent": 25.5,
+        "wc_tax_class": "standard"
+      },
+      "food": {
+        "percent": 14.0,
+        "wc_tax_class": "vat-14-food"
+      }
+    }
   },
   "limits": {
     "max_locations": 1,
