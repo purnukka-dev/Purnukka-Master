@@ -1,13 +1,15 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in UI (Production Perfect)
- * Description: 1:1 Visual match with production, including icons and typography.
- * Version: 1.2.6
+ * Plugin Name: Purnukka Check-in UI (Master Standard v1.2.7)
+ * Description: Premium floating UI with standardized English logic and dynamic routing.
+ * Version: 1.2.7
+ * Author: Purnukka Group Master
  */
 
 if (!defined('ABSPATH')) exit;
 
 add_shortcode('purnukka_checkin', function($atts) {
+    // 1. DYNAMIC ROUTING & SETTINGS
     $checkout_url = function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : site_url('/payment-checkout/');
 
     $a = shortcode_atts(array(
@@ -23,101 +25,158 @@ add_shortcode('purnukka_checkin', function($atts) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        .p-master-wrapper { 
-            font-family: 'Montserrat', sans-serif; 
-            max-width: 1000px; 
-            margin: 0 auto 60px; 
-            padding: 0 20px; 
+        /* 1. PREMIUM HEADER */
+        .p-master-header-section {
+            background: #ffffff;
+            padding: 80px 20px 60px 20px;
             text-align: center;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        /* HEADER SECTION */
-        .p-header-main { padding: 60px 0 30px; }
-        .p-brand-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 5px; color: #b89b5e; font-weight: 700; }
-        .p-title-main { font-family: 'Playfair Display', serif; font-size: 42px; margin: 15px 0; color: #1a2b28; }
-        .p-gold-divider { width: 40px; height: 1px; background: #b89b5e; margin: 20px auto; }
+        .p-brand-tag {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #b89b5e;
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
 
-        /* THE GATE BOX (High Contrast) */
-        .p-gate-production {
-            background: #fff;
+        .p-master-header-section h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(32px, 7vw, 48px);
+            color: #1a2b28;
+            margin: 0;
+            font-weight: 400;
+            letter-spacing: -1px;
+        }
+
+        /* 2. MASTER CONTAINER */
+        .p-master-premium-wrapper {
+            font-family: 'Montserrat', sans-serif;
+            max-width: 850px;
+            margin: -40px auto 80px auto; /* Floating effect */
+            padding: 50px;
+            background: #ffffff;
+            text-align: center; 
+            box-shadow: 0px 30px 60px rgba(0,0,0,0.07);
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+        }
+
+        .p-main-icon { color: #b89b5e; font-size: 40px; margin-bottom: 25px; display: block; }
+
+        /* 3. GATE BOX (PRODUCTION STYLE) */
+        .p-gate-box {
+            background: #fdfdfd;
             border: 1px solid #1a2b28;
-            border-left: 10px solid #b89b5e;
-            padding: 40px;
+            border-left: 8px solid #b89b5e; 
+            padding: 35px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 30px 0 50px;
             text-align: left;
+            margin-top: 40px;
+            gap: 25px;
         }
 
-        /* CALCULATOR GRID - MATCHES PRODUCTION */
-        .p-calc-container { text-align: left; display: none; }
-        .p-calc-title { font-size: 18px; font-weight: 700; color: #1a2b28; margin-bottom: 25px; display: block; }
-        
-        .p-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 35px; }
-        
-        .p-field-box {
-            border: 1px solid #dcdcdc; /* Exact production gray */
-            padding: 18px 25px;
+        .p-btn-dark {
+            background: #1a2b28;
+            color: #fff;
+            border: none;
+            padding: 16px 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            white-space: nowrap;
+        }
+        .p-btn-dark:hover { background: #b89b5e; }
+
+        /* 4. DYNAMIC CALCULATOR */
+        #p-calc-view {
+            display: none;
+            margin-top: 40px;
+            text-align: left;
+            animation: pFadeIn 0.5s ease-out;
+        }
+
+        .p-input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .p-input-card {
             background: #fff;
-            border-radius: 0px; /* Production uses sharp corners */
+            border: 1px solid #dcdcdc; /* Production gray border */
+            padding: 20px;
+            transition: border-color 0.3s;
         }
+        .p-input-card:focus-within { border-color: #b89b5e; }
 
-        .p-field-label {
+        .p-input-card label {
             display: block;
             font-size: 10px;
             color: #888;
             text-transform: uppercase;
-            font-weight: 700;
             margin-bottom: 8px;
+            font-weight: 700;
         }
-        .p-field-label i { margin-right: 10px; color: #666; font-size: 12px; }
+        .p-input-card label i { margin-right: 8px; color: #b89b5e; }
 
-        .p-field-box input {
+        .p-input-card input {
             border: none;
             width: 100%;
             font-weight: 700;
-            font-size: 28px;
+            font-size: 26px;
             color: #1a2b28;
             outline: none;
-            padding: 0;
+            background: transparent;
         }
 
-        /* PRICE DISPLAY */
-        .p-price-wrap { text-align: center; padding: 20px 0 40px; }
-        .p-rate-small { font-size: 11px; text-transform: uppercase; color: #b89b5e; font-weight: 700; letter-spacing: 1px; }
-        .p-price-big { font-size: 64px; font-weight: 700; color: #1a2b28; display: block; line-height: 1; margin-top: 10px; }
+        .p-summary-section {
+            border-top: 2px solid #f8f8f8;
+            padding-top: 30px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
 
-        /* BUTTONS */
-        .p-btn-action {
+        .p-summary-note { font-size: 11px; color: #b89b5e; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .p-summary-total { font-size: 52px; font-weight: 700; color: #1a2b28; display: block; line-height: 1.2; }
+
+        .p-btn-gold {
             background: #b89b5e;
             color: #fff;
             border: none;
-            padding: 24px;
+            padding: 22px;
             width: 100%;
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 13px;
-            letter-spacing: 3px;
             cursor: pointer;
+            font-size: 14px;
+            letter-spacing: 2px;
             transition: 0.3s;
         }
-        .p-btn-action:hover { background: #1a2b28; }
-        
-        .p-cancel-link {
-            display: block;
-            margin-top: 30px;
-            font-size: 11px;
-            color: #bbb;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-        }
+        .p-btn-gold:hover { background: #1a2b28; }
 
-        @media (max-width: 600px) {
-            .p-gate-production { flex-direction: column; text-align: center; gap: 25px; }
+        @keyframes pFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 650px) {
+            .p-master-premium-wrapper { padding: 40px 20px; margin-top: -30px; }
+            .p-gate-box { flex-direction: column; text-align: center; }
+            .p-btn-dark { width: 100%; }
             .p-input-grid { grid-template-columns: 1fr; }
+            .p-summary-total { font-size: 40px; }
         }
     </style>
 
@@ -127,86 +186,92 @@ add_shortcode('purnukka_checkin', function($atts) {
          data-product-id="<?php echo esc_attr($a['product_id']); ?>"
          data-checkout-url="<?php echo esc_url($checkout_url); ?>">
 
-        <div class="p-master-wrapper">
-            
-            <div class="p-header-main">
-                <span class="p-brand-tag">Purnukka Group</span>
-                <h1 class="p-title-main"><?php echo esc_html($a['title']); ?></h1>
-                <div class="p-gold-divider"></div>
-                <p style="font-size: 15px; color: #666;">Please complete your check-in and traveler declaration.</p>
-            </div>
+        <div class="p-master-header-section">
+            <span class="p-brand-tag">Purnukka Group</span>
+            <h1><?php echo esc_html($a['title']); ?></h1>
+        </div>
 
-            <div class="p-gate-production" id="gate-box">
+        <div class="p-master-premium-wrapper">
+            <i class="fas fa-key p-main-icon"></i> 
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 30px; color: #1a2b28; margin: 0 0 20px 0; border-bottom: 2px solid #b89b5e; display: inline-block; padding-bottom: 8px;">Check-in & Declaration</h2>
+            <p style="font-size: 15px; color: #666; margin: 10px auto 40px auto; max-width: 650px; line-height: 1.7;">
+                The mandatory traveler declaration ensures a safe stay and keeps your insurance coverage active throughout your visit.
+            </p>
+
+            <div class="p-gate-box" id="p-gate-view">
                 <div>
-                    <h3 style="margin: 0; font-size: 19px; color: #1a2b28;">Change in group size?</h3>
-                    <p style="margin: 5px 0 0; color: #666; font-size: 14px;">Add and pay for missing persons here.</p>
+                    <strong style="color: #1a2b28; font-size: 17px;">Change in group size?</strong><br>
+                    <span style="font-size: 13px; color: #666;">Add and pay for additional guests here.</span>
                 </div>
-                <button class="p-btn-action" style="width: auto; padding: 15px 30px; font-size: 11px;" onclick="showCalculator()">Add Guests</button>
+                <button class="p-btn-dark" onclick="pShowCalc()">Add Guests</button>
             </div>
 
-            <div class="p-calc-container" id="calc-box">
-                <span class="p-calc-title">Add guests to booking</span>
+            <div id="p-calc-view">
+                <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; color: #1a2b28; margin-bottom: 25px;">Add guests to booking</h3>
                 
                 <div class="p-input-grid">
-                    <div class="p-field-box">
-                        <label><i class="fa-solid fa-users"></i> Additional Guests (QTY)</label>
-                        <input type="number" id="in-g" value="1" min="1" oninput="runMasterCalc()">
+                    <div class="p-input-card">
+                        <label><i class="fas fa-users"></i> Additional Guests</label>
+                        <input type="number" id="p-in-guests" value="1" min="1" oninput="pMasterRecalc()">
                     </div>
-                    <div class="p-field-box">
-                        <label><i class="fa-solid fa-moon"></i> Nights (QTY)</label>
-                        <input type="number" id="in-n" value="<?php echo esc_attr($a['min_stay']); ?>" min="<?php echo esc_attr($a['min_stay']); ?>" oninput="runMasterCalc()">
+                    <div class="p-input-card">
+                        <label><i class="fas fa-moon"></i> Nights</label>
+                        <input type="number" id="p-in-nights" value="<?php echo esc_attr($a['min_stay']); ?>" min="<?php echo esc_attr($a['min_stay']); ?>" oninput="pMasterRecalc()">
                     </div>
                 </div>
 
-                <div class="p-price-wrap">
-                    <span id="rate-label" class="p-rate-small">Standard Rate</span>
-                    <span class="p-price-big"><span id="total-val">0</span> €</span>
+                <div class="p-summary-section">
+                    <span id="p-rate-label" class="p-summary-note">STANDARD RATE</span>
+                    <span class="p-summary-total"><span id="p-total-sum">0</span> €</span>
                 </div>
 
-                <button class="p-btn-action" onclick="goToPay()">Update & Pay Now</button>
-                <span class="p-cancel-link" onclick="location.reload()">Cancel</span>
+                <button class="p-btn-gold" onclick="pSubmitToPay()">Update & Pay Now</button>
+                <div onclick="location.reload()" style="text-align: center; margin-top: 20px; font-size: 11px; cursor: pointer; color: #aaa; text-transform: uppercase; letter-spacing: 2px;">Cancel</div>
             </div>
 
-            <div style="margin-top: 80px; border-top: 1px solid #eee; padding-top: 60px;">
+            <div style="margin-top: 80px; border-top: 1px solid #eee; padding-top: 60px; text-align: left;">
                 <?php echo do_shortcode('[formidable id=' . esc_attr($a['form_id']) . ']'); ?>
             </div>
         </div>
     </div>
 
     <script>
-    function showCalculator() {
-        document.getElementById('gate-box').style.display = 'none';
-        document.getElementById('calc-box').style.display = 'block';
-        runMasterCalc();
+    function pShowCalc() {
+        document.getElementById('p-gate-view').style.display = 'none';
+        document.getElementById('p-calc-view').style.display = 'block';
+        pMasterRecalc();
     }
 
-    function runMasterCalc() {
+    function pMasterRecalc() {
         const app = document.getElementById('p-master-app');
-        const base = parseInt(app.getAttribute('data-rate'));
-        const g = parseInt(document.getElementById('in-g').value) || 0;
-        let n = parseInt(document.getElementById('in-n').value) || 0;
+        const baseRate = parseInt(app.getAttribute('data-rate'));
+        const g = parseInt(document.getElementById('p-in-guests').value) || 0;
+        let n = parseInt(document.getElementById('p-in-nights').value) || 0;
         const minN = parseInt(app.getAttribute('data-min-stay'));
         
         if (n < minN) n = minN;
 
-        let r = base;
-        let txt = "STANDARD RATE (" + base + "€/NIGHT)";
-        
-        if (n > 2 && n <= 6) { r = 20; txt = "MID-TERM RATE (20€/NIGHT)"; }
-        else if (n > 6 && n <= 13) { r = 15; txt = "WEEKLY RATE (15€/NIGHT)"; }
-        else if (n >= 14) { r = 10; txt = "LONG-STAY RATE (10€/NIGHT)"; }
+        let rate = baseRate;
+        let note = "STANDARD RATE (" + baseRate + "€/NIGHT)";
 
-        document.getElementById('total-val').innerText = g * n * r;
-        document.getElementById('rate-label').innerText = txt;
+        if (n > 2 && n <= 6) { rate = 20; note = "MID-TERM RATE (20€/NIGHT)"; }
+        else if (n > 6 && n <= 13) { rate = 15; note = "WEEKLY RATE (15€/NIGHT)"; }
+        else if (n >= 14) { rate = 10; note = "LONG-STAY RATE (10€/NIGHT)"; }
+
+        document.getElementById('p-total-sum').innerText = g * n * rate;
+        document.getElementById('p-rate-label').innerText = note;
     }
 
-    function goToPay() {
+    function pSubmitToPay() {
         const app = document.getElementById('p-master-app');
         const url = app.getAttribute('data-checkout-url');
         const pid = app.getAttribute('data-product-id');
-        const sum = document.getElementById('total-val').innerText;
-        const sep = url.includes('?') ? '&' : '?';
-        window.location.href = url + sep + 'add-to-cart=' + pid + '&quantity=' + sum;
+        const sum = document.getElementById('p-total-sum').innerText;
+        
+        if (parseInt(sum) > 0) {
+            const sep = url.includes('?') ? '&' : '?';
+            window.location.href = url + sep + 'add-to-cart=' + pid + '&quantity=' + sum;
+        }
     }
     </script>
 
