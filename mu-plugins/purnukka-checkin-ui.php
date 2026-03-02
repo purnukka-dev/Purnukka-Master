@@ -30,7 +30,7 @@ add_shortcode('purnukka_checkin', function($atts) {
         .p-master-header { padding: 60px 20px 40px; text-align: center; background: #fff; }
         .p-master-brand { font-family: 'Montserrat', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 5px; color: #b89b5e; font-weight: 700; display: block; margin-bottom: 15px; }
         .p-master-header h1 { font-family: 'Playfair Display', serif; font-size: 32px; color: #1a2b28; margin: 0; font-weight: 400; }
-        .p-master-wrapper { font-family: 'Montserrat', sans-serif; max-width: 1000px; margin: 0 auto 60px; padding: 0 20px; text-align: center; }
+        .p-master-wrapper { font-family: 'Montserrat', sans-serif; max-width: 700px; margin: 0 auto 60px; padding: 0 20px; text-align: center; }
         .p-master-box { background: #fdfdfd; border: 1px solid #f0f0f0; border-top: 4px solid #b89b5e; padding: 40px; display: flex; align-items: center; justify-content: space-between; text-align: left; margin: 30px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
         .p-btn-dark { background: #1a2b28; color: #fff; border: none; padding: 16px 25px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
         .p-btn-dark:hover { background: #b89b5e; }
