@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (Visual & Content Upgrade)
- * Description: High-end typography, full content, and all icons. Product ID 276. URL: /payment-checkout/
+ * Plugin Name: Purnukka Check-in Master (Gold Button Fix)
+ * Description: Premium styling, large typography, all icons. Fixed gold button states. Product ID 276.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -36,7 +36,7 @@ add_shortcode('purnukka_checkin', function($atts) {
 
         .purnukka-welcome-header h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 48px; /* NOSTETTU FONTTI */
+            font-size: 48px;
             color: #1a2b28;
             margin: 0;
             font-weight: 400;
@@ -60,7 +60,6 @@ add_shortcode('purnukka_checkin', function($atts) {
 
         .p-top-icon { color: #b89b5e; font-size: 28px; margin-bottom: 12px; display: block; }
 
-        /* VAIHE 1: ALOITUSLAATIKKO */
         .p-step-box {
             background: #fdfdfd;
             border: 1px solid #e8e8e8;
@@ -71,9 +70,7 @@ add_shortcode('purnukka_checkin', function($atts) {
             justify-content: space-between;
             text-align: left;
             margin-top: 20px;
-            transition: 0.3s;
         }
-        .p-step-box:hover { border-color: #b89b5e; }
 
         .btn-p-dark {
             background: #1a2b28; color: #fff; border: none; padding: 12px 25px;
@@ -82,7 +79,6 @@ add_shortcode('purnukka_checkin', function($atts) {
         }
         .btn-p-dark:hover { background: #b89b5e; }
 
-        /* VAIHE 2: LASKURI */
         #purnukka-form-view { display: none; margin-top: 20px; text-align: left; animation: fadeIn 0.4s ease; }
 
         .p-input-row {
@@ -120,12 +116,32 @@ add_shortcode('purnukka_checkin', function($atts) {
         .p-price-note { font-size: 10px; color: #b89b5e; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .p-price-total { font-size: 38px; font-weight: bold; color: #1a2b28; display: block; line-height: 1; margin-top: 5px; }
 
+        /* KULTAINEN NAPPI - KORJATTU */
         .btn-p-gold {
-            background: #b89b5e; color: #fff; border: none; padding: 18px;
-            width: 100%; font-weight: bold; text-transform: uppercase;
-            cursor: pointer; font-size: 13px; letter-spacing: 2px; transition: 0.3s;
+            background: #b89b5e !important; /* Pakotettu kulta */
+            color: #fff !important;
+            border: none;
+            padding: 18px;
+            width: 100%;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-size: 13px;
+            letter-spacing: 2px;
+            transition: background 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 15px rgba(184, 155, 94, 0.2);
         }
-        .btn-p-gold:hover { background: #1a2b28; }
+
+        /* Hover-tila: Hieman tummempi kulta, ei musta */
+        .btn-p-gold:hover {
+            background: #a68a52 !important; 
+        }
+
+        /* Active-tila: Kun nappia painetaan alas */
+        .btn-p-gold:active {
+            background: #8e7646 !important;
+            transform: translateY(1px);
+        }
 
         .btn-cancel-link {
             text-align: center; margin-top: 12px; font-size: 10px; cursor: pointer;
