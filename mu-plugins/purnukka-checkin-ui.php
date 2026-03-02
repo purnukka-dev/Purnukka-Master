@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (Box Layout Fix)
- * Description: Guests & Nights side-by-side, Price & Pay below. ID 276.
+ * Plugin Name: Purnukka Check-in Master Ultra-Low (No Form)
+ * Description: Focus only on calculator and branding. Form removed to save space.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -13,14 +13,14 @@ add_shortcode('purnukka_checkin', function($atts) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display&display=swap" rel="stylesheet">
 
     <style>
-        .p-master-wrapper {
+        .p-ultra-low-wrapper {
             font-family: 'Montserrat', sans-serif;
             max-width: 850px;
-            margin: -140px auto 20px auto !important;
-            padding: 35px 40px !important;
+            margin: -140px auto 20px auto !important; /* Nostaa laatikon ylös Booklium-palkin viereen */
+            padding: 30px 40px !important;
             background: #ffffff;
             text-align: center; 
-            box-shadow: 0px 20px 50px rgba(0,0,0,0.07);
+            box-shadow: 0px 20px 50px rgba(0,0,0,0.06);
             border-radius: 4px;
             border: 1px solid #f0f0f0;
             box-sizing: border-box;
@@ -31,8 +31,8 @@ add_shortcode('purnukka_checkin', function($atts) {
         .p-brand-gold { font-size: 10px; text-transform: uppercase; letter-spacing: 5px; color: #b89b5e; font-weight: bold; display: block; margin-bottom: 8px; }
         .p-title-main { font-family: 'Playfair Display', serif; font-size: 32px; color: #1a2b28; margin: 0 0 25px 0; }
 
-        /* VAIHE 1: ALOITUSBOXI */
-        .p-step-box {
+        /* VAIHE 1: MATALA ALOITUSBOXI */
+        .p-step-box-low {
             background: #fdfdfd;
             border: 1px solid #1a2b28;
             border-left: 6px solid #b89b5e; 
@@ -41,15 +41,15 @@ add_shortcode('purnukka_checkin', function($atts) {
             align-items: center;
             justify-content: space-between;
             text-align: left;
-            margin-bottom: 25px;
+            margin-bottom: 5px;
         }
 
-        /* VAIHE 2: LASKURI - LAATIKOT VIEREKKÄIN */
-        #p-calc-container { display: none; margin-bottom: 25px; animation: fadeIn 0.3s ease; }
+        /* VAIHE 2: LASKURI (Guests & Nights vierekkäin) */
+        #p-calc-view { display: none; animation: fadeIn 0.3s ease; }
 
-        .p-input-grid {
+        .p-input-grid-compact {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* TÄMÄ LAITTAA NE VIEREKKÄIN */
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-bottom: 15px;
         }
@@ -63,19 +63,17 @@ add_shortcode('purnukka_checkin', function($atts) {
         .p-input-box label { display: block; font-size: 9px; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
         .p-input-box input { border: none; width: 100%; font-size: 20px; font-weight: bold; color: #1a2b28; outline: none; background: transparent; }
 
-        /* HINTA JA NAPPI ALAPUOLELLA */
-        .p-price-row {
+        .p-price-row-compact {
             background: #fdfdfd;
             border: 1px solid #1a2b28;
-            padding: 20px;
+            padding: 15px;
             margin-bottom: 15px;
             text-align: center;
         }
 
-        .p-total-label { font-size: 10px; color: #b89b5e; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .p-total-price { font-size: 36px; font-weight: bold; color: #1a2b28; }
+        .p-price-val { font-size: 32px; font-weight: bold; color: #1a2b28; }
 
-        .btn-gold-pay {
+        .btn-update-pay {
             background: #b89b5e; color: #fff; border: none; padding: 18px;
             width: 100%; font-weight: bold; text-transform: uppercase;
             cursor: pointer; font-size: 13px; letter-spacing: 1px;
@@ -84,27 +82,27 @@ add_shortcode('purnukka_checkin', function($atts) {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         @media (max-width: 600px) {
-            .p-input-grid { grid-template-columns: 1fr; }
-            .p-step-box { flex-direction: column; text-align: center; gap: 15px; }
+            .p-input-grid-compact { grid-template-columns: 1fr; }
+            .p-step-box-low { flex-direction: column; text-align: center; gap: 15px; }
         }
     </style>
 
-    <div class="p-master-wrapper">
+    <div class="p-ultra-low-wrapper">
         <span class="p-brand-gold">Purnukka Group</span>
         <h1 class="p-title-main">Welcome Home</h1>
 
         <h2 style="font-family: 'Playfair Display', serif; font-size: 24px; color: #1a2b28; margin-bottom: 10px;">Traveler Declaration & Check-in</h2>
         
-        <div class="p-step-box" id="step-1">
+        <div class="p-step-box-low" id="p-step-1">
             <div>
-                <strong style="font-size: 15px;">Group size changed?</strong><br>
+                <strong style="font-size: 15px;">Has your group size changed?</strong><br>
                 <span style="font-size: 11px; color: #666;">Add and pay for additional guests here.</span>
             </div>
-            <button onclick="showCalc()" style="background:#1a2b28; color:#fff; border:none; padding:10px 20px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size:10px;">Add guests</button>
+            <button onclick="activateCalc()" style="background:#1a2b28; color:#fff; border:none; padding:10px 20px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size:10px;">Add guests</button>
         </div>
 
-        <div id="p-calc-container">
-            <div class="p-input-grid">
+        <div id="p-calc-view">
+            <div class="p-input-grid-compact">
                 <div class="p-input-box">
                     <label>Guests</label>
                     <input type="number" id="p-guests" value="1" min="1" oninput="recalc()">
@@ -115,24 +113,20 @@ add_shortcode('purnukka_checkin', function($atts) {
                 </div>
             </div>
 
-            <div class="p-price-row">
-                <span class="p-total-label">Estimated Total</span>
-                <span class="p-total-price"><span id="p-sum">60</span> €</span>
+            <div class="p-price-row-compact">
+                <span style="font-size: 9px; color: #b89b5e; font-weight: bold; display: block;">ESTIMATED TOTAL</span>
+                <span class="p-price-val"><span id="p-sum">60</span> €</span>
             </div>
 
-            <button class="btn-gold-pay" onclick="pay()">Update and Pay</button>
+            <button class="btn-update-pay" onclick="pay()">Update and Pay</button>
             <div onclick="location.reload()" style="text-align: center; margin-top: 10px; font-size: 9px; cursor: pointer; color: #aaa; text-transform: uppercase;">Cancel</div>
-        </div>
-
-        <div style="margin-top: 35px; text-align: left; border-top: 1px solid #f0f0f0; padding-top: 25px;">
-            <?php echo do_shortcode('[formidable id=4]'); ?>
         </div>
     </div>
 
     <script>
-    function showCalc() {
-        document.getElementById('step-1').style.display = 'none';
-        document.getElementById('p-calc-container').style.display = 'block';
+    function activateCalc() {
+        document.getElementById('p-step-1').style.display = 'none';
+        document.getElementById('p-calc-view').style.display = 'block';
         recalc();
     }
     function recalc() {
