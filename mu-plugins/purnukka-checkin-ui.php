@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (Low Profile)
- * Description: Compact boxes for single-screen view. All branding kept. Product ID 276.
+ * Plugin Name: Purnukka Check-in Master (Ultra-Compact)
+ * Description: Minimalist heights to fit one screen. All branding kept. Product ID 276.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -17,49 +17,49 @@ add_shortcode('purnukka_checkin', function($atts) {
 
         .purnukka-welcome-header {
             background: #ffffff;
-            padding: 15px 20px; /* Puristettu pystysuunnassa */
+            padding: 10px 20px; 
             text-align: center;
-            margin-top: -60px !important;
+            margin-top: -65px !important; /* Nostaa aivan yläreunaan */
         }
 
         .p-brand-label {
             font-family: 'Montserrat', sans-serif;
             font-size: 9px;
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             color: #b89b5e;
             font-weight: bold;
-            margin-bottom: 2px;
         }
 
         .purnukka-welcome-header h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 28px; /* Pienempi otsikko */
+            font-size: 24px; 
             color: #1a2b28;
             margin: 0;
         }
 
         .purnukka-premium-wrapper {
             font-family: 'Montserrat', sans-serif;
-            max-width: 750px; /* Kapeampi laatikko */
-            margin: -10px auto 20px auto !important;
-            padding: 20px 35px; /* Vähemmän paddingia */
+            max-width: 700px; /* Kapeampi, jotta pysyy ryhdikkäänä */
+            margin: 0 auto !important;
+            padding: 15px 30px; 
             background: #ffffff;
             text-align: center; 
-            box-shadow: 0px 15px 40px rgba(0,0,0,0.06);
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.05);
             border-radius: 4px;
             border: 1px solid #f0f0f0;
             z-index: 999;
             position: relative;
         }
 
-        .p-top-icon { color: #b89b5e; font-size: 24px; margin-bottom: 10px; display: block; }
+        .p-top-icon { color: #b89b5e; font-size: 20px; margin-bottom: 5px; display: block; }
 
+        /* TIIVISTETTY ALOITUSLAATIKKO */
         .p-step-box {
             background: #fdfdfd;
             border: 1px solid #1a2b28;
-            border-left: 5px solid #b89b5e; 
-            padding: 15px 20px;
+            border-left: 4px solid #b89b5e; 
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -68,55 +68,56 @@ add_shortcode('purnukka_checkin', function($atts) {
         }
 
         .btn-p-dark {
-            background: #1a2b28; color: #fff; border: none; padding: 10px 20px;
-            font-weight: bold; text-transform: uppercase; font-size: 10px;
+            background: #1a2b28; color: #fff; border: none; padding: 8px 15px;
+            font-weight: bold; text-transform: uppercase; font-size: 9px;
             cursor: pointer;
         }
 
-        /* TIIVISTETYT SYÖTTÖLAATIKOT */
-        #purnukka-form-view { display: none; margin-top: 15px; text-align: left; }
+        /* ULTRA-TIIVISTETYT SYÖTTÖLAATIKOT */
+        #purnukka-form-view { display: none; margin-top: 10px; text-align: left; }
 
         .p-input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
         .p-input-field {
             background: #fff;
             border: 1px solid #b89b5e;
-            padding: 10px 12px; /* Kutistettu korkeus */
+            padding: 6px 10px; /* Puristettu minimiin */
         }
 
         .p-input-field label {
             display: block; font-size: 8px; color: #888;
-            text-transform: uppercase; margin-bottom: 2px; font-weight: bold;
+            text-transform: uppercase; font-weight: bold; margin-bottom: 0px;
         }
 
         .p-input-field input {
             border: none; width: 100%; font-weight: bold;
-            font-size: 18px; color: #1a2b28; outline: none; background: transparent;
+            font-size: 16px; color: #1a2b28; outline: none; background: transparent;
+            height: 24px; /* Pakotettu matala korkeus */
         }
 
         .p-price-summary {
             border-top: 1px solid #f0f0f0;
-            padding-top: 10px;
-            margin-bottom: 15px;
+            padding-top: 8px;
+            margin-bottom: 10px;
             text-align: center;
         }
 
-        .p-price-note { font-size: 9px; color: #b89b5e; font-weight: bold; text-transform: uppercase; }
-        .p-price-total { font-size: 32px; font-weight: bold; color: #1a2b28; display: block; line-height: 1; }
+        .p-price-note { font-size: 8px; color: #b89b5e; font-weight: bold; text-transform: uppercase; }
+        .p-price-total { font-size: 28px; font-weight: bold; color: #1a2b28; display: block; line-height: 1; }
 
         .btn-p-gold {
-            background: #b89b5e; color: #fff; border: none; padding: 14px;
+            background: #b89b5e; color: #fff; border: none; padding: 12px;
             width: 100%; font-weight: bold; text-transform: uppercase;
-            cursor: pointer; font-size: 12px;
+            cursor: pointer; font-size: 11px;
         }
 
         .btn-cancel-link {
-            text-align: center; margin-top: 10px; font-size: 10px; cursor: pointer;
+            text-align: center; margin-top: 8px; font-size: 9px; cursor: pointer;
             color: #aaa; text-transform: uppercase; display: block;
         }
     </style>
@@ -128,16 +129,12 @@ add_shortcode('purnukka_checkin', function($atts) {
 
     <div class="purnukka-premium-wrapper">
         <i class="fas fa-key p-top-icon"></i> 
-        <h2 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #1a2b28; margin: 0 0 5px 0; border-bottom: 2px solid #b89b5e; display: inline-block; padding-bottom: 4px;">Traveler Declaration & Check-in</h2>
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 18px; color: #1a2b28; margin: 0 0 5px 0; border-bottom: 2px solid #b89b5e; display: inline-block; padding-bottom: 2px;">Traveler Declaration & Check-in</h2>
         
-        <p style="font-size: 12px; color: #666; margin: 5px auto 15px auto; line-height: 1.4;">
-            Ensures your safety and keeps insurance valid.
-        </p>
-
         <div class="p-step-box" id="p-step-1">
             <div>
-                <strong style="color: #1a2b28; font-size: 14px;">Group size changed?</strong><br>
-                <span style="font-size: 11px; color: #888;">Add and pay for additional guests.</span>
+                <strong style="color: #1a2b28; font-size: 13px;">Group size changed?</strong><br>
+                <span style="font-size: 10px; color: #888;">Add and pay for additional guests.</span>
             </div>
             <button class="btn-p-dark" onclick="activateForm()">Add guests</button>
         </div>
@@ -145,11 +142,11 @@ add_shortcode('purnukka_checkin', function($atts) {
         <div id="purnukka-form-view">
             <div class="p-input-row">
                 <div class="p-input-field">
-                    <label><i class="fas fa-users"></i> Guests (qty)</label>
+                    <label>Guests (qty)</label>
                     <input type="number" id="p-guests" value="1" min="1" oninput="runRecalc()">
                 </div>
                 <div class="p-input-field">
-                    <label><i class="fas fa-moon"></i> Nights (stay)</label>
+                    <label>Nights (stay)</label>
                     <input type="number" id="p-nights" value="2" min="2" oninput="runRecalc()">
                 </div>
             </div>
