@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (The Final Everything Version)
- * Description: Ultra-compact BUT includes all texts, icons, and branding. Product ID 276.
+ * Plugin Name: Purnukka Check-in Master (Correct Checkout URL)
+ * Description: Fixes the redirect to /payment-checkout/. All texts and icons kept. Product ID 276.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -55,7 +55,6 @@ add_shortcode('purnukka_checkin', function($atts) {
 
         .p-top-icon { color: #b89b5e; font-size: 24px; margin-bottom: 10px; display: block; }
 
-        /* ALOITUSLAATIKKO */
         .p-step-box {
             background: #fdfdfd;
             border: 1px solid #1a2b28;
@@ -74,7 +73,6 @@ add_shortcode('purnukka_checkin', function($atts) {
             cursor: pointer;
         }
 
-        /* TIIVISTETYT SYÖTTÖLAATIKOT IKONEILLA */
         #purnukka-form-view { display: none; margin-top: 15px; text-align: left; }
 
         .p-input-row {
@@ -193,9 +191,13 @@ add_shortcode('purnukka_checkin', function($atts) {
         document.getElementById('p-final-sum').innerText = g * n * up;
         document.getElementById('p-info').innerText = note;
     }
+    
+    /* TÄSSÄ SE KORJAUS */
     function proceedToPay() {
         const val = document.getElementById('p-final-sum').innerText;
-        window.location.href = window.location.origin + '/checkout/?add-to-cart=276&quantity=' + val;
+        // Päivitetty oikea kassan osoite
+        const checkoutUrl = '/payment-checkout/'; 
+        window.location.href = window.location.origin + checkoutUrl + '?add-to-cart=276&quantity=' + val;
     }
     </script>
 
