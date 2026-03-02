@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (Correct Checkout URL)
- * Description: Fixes the redirect to /payment-checkout/. All texts and icons kept. Product ID 276.
+ * Plugin Name: Purnukka Check-in Master (Visual & Content Upgrade)
+ * Description: High-end typography, full content, and all icons. Product ID 276. URL: /payment-checkout/
  */
 
 if (!defined('ABSPATH')) exit;
@@ -10,6 +10,7 @@ add_shortcode('purnukka_checkin', function($atts) {
     ob_start(); ?>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
     <style>
         /* PAKOTETTU TIIVISTYS JOTTA MAHDU RUUTUUN */
@@ -17,114 +18,125 @@ add_shortcode('purnukka_checkin', function($atts) {
 
         .purnukka-welcome-header {
             background: #ffffff;
-            padding: 20px 20px 5px 20px; 
+            padding: 30px 20px 10px 20px; 
             text-align: center;
-            margin-top: -65px !important;
+            margin-top: -60px !important;
         }
 
         .p-brand-label {
             font-family: 'Montserrat', sans-serif;
-            font-size: 9px;
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 5px;
             color: #b89b5e;
             font-weight: bold;
             display: block;
+            margin-bottom: 8px;
         }
 
         .purnukka-welcome-header h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 26px; 
+            font-size: 48px; /* NOSTETTU FONTTI */
             color: #1a2b28;
             margin: 0;
+            font-weight: 400;
+            font-style: italic;
+            letter-spacing: -1px;
         }
 
         .purnukka-premium-wrapper {
             font-family: 'Montserrat', sans-serif;
-            max-width: 750px;
+            max-width: 800px;
             margin: 0 auto !important;
-            padding: 20px 40px; 
+            padding: 25px 45px; 
             background: #ffffff;
             text-align: center; 
-            box-shadow: 0px 15px 40px rgba(0,0,0,0.06);
+            box-shadow: 0px 15px 50px rgba(0,0,0,0.06);
             border-radius: 4px;
             border: 1px solid #f0f0f0;
             z-index: 999;
             position: relative;
         }
 
-        .p-top-icon { color: #b89b5e; font-size: 24px; margin-bottom: 10px; display: block; }
+        .p-top-icon { color: #b89b5e; font-size: 28px; margin-bottom: 12px; display: block; }
 
+        /* VAIHE 1: ALOITUSLAATIKKO */
         .p-step-box {
             background: #fdfdfd;
-            border: 1px solid #1a2b28;
-            border-left: 5px solid #b89b5e; 
-            padding: 15px 25px;
+            border: 1px solid #e8e8e8;
+            border-left: 6px solid #b89b5e; 
+            padding: 20px 30px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             text-align: left;
-            margin-top: 15px;
+            margin-top: 20px;
+            transition: 0.3s;
         }
+        .p-step-box:hover { border-color: #b89b5e; }
 
         .btn-p-dark {
-            background: #1a2b28; color: #fff; border: none; padding: 10px 20px;
-            font-weight: bold; text-transform: uppercase; font-size: 10px;
-            cursor: pointer;
+            background: #1a2b28; color: #fff; border: none; padding: 12px 25px;
+            font-weight: bold; text-transform: uppercase; font-size: 11px;
+            cursor: pointer; letter-spacing: 1px; transition: 0.3s;
         }
+        .btn-p-dark:hover { background: #b89b5e; }
 
-        #purnukka-form-view { display: none; margin-top: 15px; text-align: left; }
+        /* VAIHE 2: LASKURI */
+        #purnukka-form-view { display: none; margin-top: 20px; text-align: left; animation: fadeIn 0.4s ease; }
 
         .p-input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         .p-input-field {
             background: #fff;
             border: 1px solid #b89b5e;
-            padding: 8px 12px;
+            padding: 10px 15px;
         }
 
         .p-input-field label {
-            display: block; font-size: 8px; color: #888;
-            text-transform: uppercase; font-weight: bold; margin-bottom: 2px;
+            display: block; font-size: 9px; color: #b89b5e;
+            text-transform: uppercase; font-weight: bold; margin-bottom: 4px;
         }
-
-        .p-input-field label i { color: #b89b5e; margin-right: 5px; }
+        .p-input-field label i { margin-right: 6px; }
 
         .p-input-field input {
             border: none; width: 100%; font-weight: bold;
-            font-size: 18px; color: #1a2b28; outline: none; background: transparent;
-            height: 22px;
+            font-size: 20px; color: #1a2b28; outline: none; background: transparent;
+            height: 24px;
         }
 
         .p-price-summary {
             border-top: 1px solid #f0f0f0;
-            padding-top: 10px;
-            margin-bottom: 15px;
+            padding-top: 15px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
-        .p-price-note { font-size: 9px; color: #b89b5e; font-weight: bold; text-transform: uppercase; }
-        .p-price-total { font-size: 34px; font-weight: bold; color: #1a2b28; display: block; line-height: 1; }
+        .p-price-note { font-size: 10px; color: #b89b5e; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .p-price-total { font-size: 38px; font-weight: bold; color: #1a2b28; display: block; line-height: 1; margin-top: 5px; }
 
         .btn-p-gold {
-            background: #b89b5e; color: #fff; border: none; padding: 16px;
+            background: #b89b5e; color: #fff; border: none; padding: 18px;
             width: 100%; font-weight: bold; text-transform: uppercase;
-            cursor: pointer; font-size: 12px;
+            cursor: pointer; font-size: 13px; letter-spacing: 2px; transition: 0.3s;
         }
+        .btn-p-gold:hover { background: #1a2b28; }
 
         .btn-cancel-link {
-            text-align: center; margin-top: 10px; font-size: 10px; cursor: pointer;
-            color: #aaa; text-transform: uppercase; display: block;
+            text-align: center; margin-top: 12px; font-size: 10px; cursor: pointer;
+            color: #aaa; text-transform: uppercase; letter-spacing: 1px; display: block;
         }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 650px) {
             .p-input-row { grid-template-columns: 1fr; }
-            .p-step-box { flex-direction: column; text-align: center; gap: 10px; }
+            .p-step-box { flex-direction: column; text-align: center; gap: 15px; }
         }
     </style>
 
@@ -135,22 +147,22 @@ add_shortcode('purnukka_checkin', function($atts) {
 
     <div class="purnukka-premium-wrapper">
         <i class="fas fa-key p-top-icon"></i> 
-        <h2 style="font-family: 'Playfair Display', serif; font-size: 20px; color: #1a2b28; margin: 0 0 5px 0; border-bottom: 2px solid #b89b5e; display: inline-block; padding-bottom: 3px;">Traveler Declaration & Check-in</h2>
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #1a2b28; margin: 0 0 8px 0; border-bottom: 2px solid #b89b5e; display: inline-block; padding-bottom: 5px;">Traveler Declaration & Check-in</h2>
         
-        <p style="font-size: 12px; color: #666; margin: 10px auto 20px auto; max-width: 600px; line-height: 1.5; text-align: center;">
-            A legal traveler declaration ensures your safety and guarantees that your insurance coverage remains valid throughout your entire stay.
+        <p style="font-size: 13px; color: #555; margin: 12px auto 25px auto; max-width: 650px; line-height: 1.7; text-align: center; font-style: italic;">
+            Your comfort and safety are our priorities. A legal traveler declaration ensures your stay is documented correctly and guarantees that your comprehensive insurance coverage remains valid throughout your time with us.
         </p>
 
         <div class="p-step-box" id="p-step-1">
             <div>
-                <strong style="color: #1a2b28; font-size: 14px;">Has your group size changed?</strong><br>
-                <span style="font-size: 11px; color: #666;">You can add and pay for additional guests here.</span>
+                <strong style="color: #1a2b28; font-size: 15px;">Has your group size changed since booking?</strong><br>
+                <span style="font-size: 11px; color: #777;">If you have extra guests arriving, please update your declaration and settle the additional guest fee here.</span>
             </div>
             <button class="btn-p-dark" onclick="activateForm()">Yes, add guests</button>
         </div>
 
         <div id="purnukka-form-view">
-            <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; color: #1a2b28; margin-bottom: 12px; text-align: left;">Add guests to your booking</h3>
+            <h3 style="font-family: 'Playfair Display', serif; font-size: 20px; color: #1a2b28; margin-bottom: 15px;">Update Guest Details</h3>
             
             <div class="p-input-row">
                 <div class="p-input-field">
@@ -158,7 +170,7 @@ add_shortcode('purnukka_checkin', function($atts) {
                     <input type="number" id="p-guests" value="1" min="1" oninput="runRecalc()">
                 </div>
                 <div class="p-input-field">
-                    <label><i class="fas fa-moon"></i> Nights (stay)</label>
+                    <label><i class="fas fa-calendar-day"></i> Nights of stay</label>
                     <input type="number" id="p-nights" value="2" min="2" oninput="runRecalc()">
                 </div>
             </div>
@@ -168,8 +180,8 @@ add_shortcode('purnukka_checkin', function($atts) {
                 <span class="p-price-total"><span id="p-final-sum">60</span> €</span>
             </div>
 
-            <button class="btn-p-gold" onclick="proceedToPay()">Update and Pay Now</button>
-            <div class="btn-cancel-link" onclick="location.reload()">Cancel</div>
+            <button class="btn-p-gold" onclick="proceedToPay()">Update and Secure Payment</button>
+            <div class="btn-cancel-link" onclick="location.reload()">Return to Overview</div>
         </div>
     </div>
 
@@ -191,11 +203,8 @@ add_shortcode('purnukka_checkin', function($atts) {
         document.getElementById('p-final-sum').innerText = g * n * up;
         document.getElementById('p-info').innerText = note;
     }
-    
-    /* TÄSSÄ SE KORJAUS */
     function proceedToPay() {
         const val = document.getElementById('p-final-sum').innerText;
-        // Päivitetty oikea kassan osoite
         const checkoutUrl = '/payment-checkout/'; 
         window.location.href = window.location.origin + checkoutUrl + '?add-to-cart=276&quantity=' + val;
     }
