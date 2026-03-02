@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (Wide Layout & Golden Title)
- * Description: Wide layout with golden 'Purnukka Group' title, English texts, ID 276.
+ * Plugin Name: Purnukka Check-in Master (Box Layout Fix)
+ * Description: Guests & Nights side-by-side, Price & Pay below. ID 276.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -10,194 +10,132 @@ add_shortcode('purnukka_checkin', function($atts) {
     ob_start(); ?>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display&display=swap" rel="stylesheet">
 
     <style>
-        /* TAVOITELTU LEVEÄ ASettelu (image_4.png mukainen) */
-        .p-master-layout-container {
+        .p-master-wrapper {
             font-family: 'Montserrat', sans-serif;
-            max-width: 950px !important; /* Pakotetaan leveys tässä, kuten image_4.png */
-            margin: -80px auto 40px auto !important; /* Negatiivinen margin nostaa laatikon ylös */
-            padding: 40px !important;
-            background: #ffffff !important;
-            text-align: center !important; 
-            box-shadow: 0px 20px 50px rgba(0,0,0,0.06) !important;
-            border-radius: 4px !important;
-            border: 1px solid #f0f0f0 !important;
-            box-sizing: border-box !important;
+            max-width: 850px;
+            margin: -140px auto 20px auto !important;
+            padding: 35px 40px !important;
+            background: #ffffff;
+            text-align: center; 
+            box-shadow: 0px 20px 50px rgba(0,0,0,0.07);
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+            box-sizing: border-box;
             position: relative;
-            z-index: 99;
+            z-index: 999;
         }
 
-        /* 1. KULTAINEN PURNUKKA GROUP -OTSIKKO */
-        .p-gold-title-section {
-            padding: 0 0 30px 0;
-            text-align: center;
-        }
+        .p-brand-gold { font-size: 10px; text-transform: uppercase; letter-spacing: 5px; color: #b89b5e; font-weight: bold; display: block; margin-bottom: 8px; }
+        .p-title-main { font-family: 'Playfair Display', serif; font-size: 32px; color: #1a2b28; margin: 0 0 25px 0; }
 
-        .p-brand-label-gold {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            color: #b89b5e; /* Kultainen väri, kuten image_4.png */
-            font-weight: bold;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        .p-main-title-dark {
-            font-family: 'Playfair Display', serif;
-            font-size: 42px; /* Suuri otsikko, kuten image_4.png */
-            color: #1a2b28;
-            margin: 0;
-            font-weight: 400;
-        }
-
-        /* 2. PREMIUM CONTENT BOX */
-        .p-premium-content-box {
-            border-top: 1px solid #f0f0f0;
-            padding-top: 35px;
-            position: relative;
-        }
-
-        .p-top-icon-gold { color: #b89b5e; font-size: 36px; margin-bottom: 25px; display: block; }
-
-        .p-checkin-title-line {
-            font-family: 'Playfair Display', serif;
-            font-size: 30px;
-            color: #1a2b28;
-            margin: 0 0 15px 0;
-            border-bottom: 2px solid #b89b5e; /* Kultainen viiva alla */
-            display: inline-block;
-            padding-bottom: 8px;
-        }
-
-        /* 3. STEP-BOX & INLINE CALCULATOR ROW (Wide Layout) */
+        /* VAIHE 1: ALOITUSBOXI */
         .p-step-box {
             background: #fdfdfd;
             border: 1px solid #1a2b28;
-            border-left: 8px solid #b89b5e; /* Paksu kultainen reuna */
-            padding: 30px;
+            border-left: 6px solid #b89b5e; 
+            padding: 20px 30px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             text-align: left;
-            margin: 30px 0;
-            gap: 20px;
+            margin-bottom: 25px;
         }
 
-        /* TÄMÄ ON SE LEVEÄ RIVI (Laskuri vierekkäin) */
-        #purnukka-form-view {
-            display: none;
-            margin: 30px 0;
-            animation: fadeIn 0.4s ease-out;
+        /* VAIHE 2: LASKURI - LAATIKOT VIEREKKÄIN */
+        #p-calc-container { display: none; margin-bottom: 25px; animation: fadeIn 0.3s ease; }
+
+        .p-input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* TÄMÄ LAITTAA NE VIEREKKÄIN */
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
-        .p-input-row-wide {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            border: 1px solid #b89b5e; /* Kultainen kehys */
+        .p-input-box {
+            border: 1px solid #b89b5e;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .p-input-box label { display: block; font-size: 9px; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
+        .p-input-box input { border: none; width: 100%; font-size: 20px; font-weight: bold; color: #1a2b28; outline: none; background: transparent; }
+
+        /* HINTA JA NAPPI ALAPUOLELLA */
+        .p-price-row {
+            background: #fdfdfd;
+            border: 1px solid #1a2b28;
             padding: 20px;
-            gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
-        .p-input-group-compact { flex: 1; text-align: left; }
-        .p-input-group-compact label { display: block; font-size: 9px; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-        .p-input-group-compact input { border: none; width: 100%; font-size: 20px; font-weight: bold; color: #1a2b28; outline: none; background: transparent; }
+        .p-total-label { font-size: 10px; color: #b89b5e; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .p-total-price { font-size: 36px; font-weight: bold; color: #1a2b28; }
 
-        .p-price-display-gold {
-            border-left: 1px solid #eee;
-            padding-left: 20px;
-            text-align: right;
-            min-width: 90px;
-        }
-        .p-price-display-gold label { font-size: 9px; color: #b89b5e; font-weight: bold; text-transform: uppercase; }
-        .p-price-display-gold .p-total-val { font-size: 36px; font-weight: bold; color: #1a2b28; display: block; }
-
-        /* BUTTONS & FOOTER */
-        .btn-p-gold-wide {
-            background: #b89b5e; color: #fff; border: none; padding: 20px;
+        .btn-gold-pay {
+            background: #b89b5e; color: #fff; border: none; padding: 18px;
             width: 100%; font-weight: bold; text-transform: uppercase;
             cursor: pointer; font-size: 13px; letter-spacing: 1px;
         }
 
-        .btn-p-dark-compact {
-            background: #1a2b28; color: #fff; border: none; padding: 12px 20px;
-            font-weight: bold; text-transform: uppercase; font-size: 10px;
-            cursor: pointer; white-space: nowrap;
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* MOBILE OPTIMIZATION */
-        @media (max-width: 900px) {
-            .p-master-layout-container { margin-top: 20px !important; padding: 25px !important; }
-            .p-step-box, .p-input-row-wide { flex-direction: column !important; text-align: center !important; }
-            .p-price-display-gold { border-left: none; border-top: 1px solid #eee; padding: 15px 0 0 0; width: 100%; text-align: center; }
-            .p-main-title-dark { font-size: 32px; }
+        @media (max-width: 600px) {
+            .p-input-grid { grid-template-columns: 1fr; }
+            .p-step-box { flex-direction: column; text-align: center; gap: 15px; }
         }
     </style>
 
-    <div class="p-master-layout-container">
+    <div class="p-master-wrapper">
+        <span class="p-brand-gold">Purnukka Group</span>
+        <h1 class="p-title-main">Welcome Home</h1>
+
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 24px; color: #1a2b28; margin-bottom: 10px;">Traveler Declaration & Check-in</h2>
         
-        <div class="p-gold-title-section">
-            <span class="p-brand-label-gold">Purnukka Group</span>
-            <h1 class="p-main-title-dark">Welcome Home</h1>
+        <div class="p-step-box" id="step-1">
+            <div>
+                <strong style="font-size: 15px;">Group size changed?</strong><br>
+                <span style="font-size: 11px; color: #666;">Add and pay for additional guests here.</span>
+            </div>
+            <button onclick="showCalc()" style="background:#1a2b28; color:#fff; border:none; padding:10px 20px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size:10px;">Add guests</button>
         </div>
 
-        <div class="p-premium-content-box">
-            <i class="fas fa-key p-top-icon-gold"></i> 
-            <h2 class="p-checkin-title-line">Traveler Declaration & Check-in</h2>
-            <p style="font-size: 14px; color: #666; margin: 15px auto 35px auto; max-width: 650px; line-height: 1.6;">
-                Alegal traveler declaration ensures your insurance coverage valid throughout your visit.
-            </p>
-
-            <div class="p-step-box" id="p-step-1">
-                <div>
-                    <strong style="color: #1a2b28; font-size: 16px;">Has your group size changed?</strong><br>
-                    <span style="font-size: 12px; color: #666;">You can add and pay for additional guests here.</span>
+        <div id="p-calc-container">
+            <div class="p-input-grid">
+                <div class="p-input-box">
+                    <label>Guests</label>
+                    <input type="number" id="p-guests" value="1" min="1" oninput="recalc()">
                 </div>
-                <button class="btn-p-dark-compact" onclick="activateForm()">Yes, add guests</button>
-            </div>
-
-            <div id="purnukka-form-view">
-                <div class="p-input-row-wide">
-                    <div class="p-input-group-compact">
-                        <label><i class="fas fa-users"></i> Guests</label>
-                        <input type="number" id="p-guests" value="1" min="1" oninput="runRecalc()">
-                    </div>
-                    <div class="p-input-group-compact">
-                        <label><i class="fas fa-moon"></i> Nights</label>
-                        <input type="number" id="p-nights" value="2" min="2" oninput="runRecalc()">
-                    </div>
-                    <div class="p-price-display-gold">
-                        <label>Total</label>
-                        <span class="p-total-val"><span id="p-final-sum">60</span> €</span>
-                    </div>
+                <div class="p-input-box">
+                    <label>Nights</label>
+                    <input type="number" id="p-nights" value="2" min="2" oninput="recalc()">
                 </div>
-
-                <button class="btn-p-gold-wide" onclick="proceedToPay()">Update and Pay</button>
-                <div onclick="location.reload()" style="text-align: center; margin-top: 15px; font-size: 10px; cursor: pointer; color: #888; text-transform: uppercase;">Cancel</div>
             </div>
 
-            <div style="margin-top: 60px; text-align: left; border-top: 1px solid #eee; padding-top: 50px;">
-                <?php echo do_shortcode('[formidable id=4]'); ?>
+            <div class="p-price-row">
+                <span class="p-total-label">Estimated Total</span>
+                <span class="p-total-price"><span id="p-sum">60</span> €</span>
             </div>
+
+            <button class="btn-gold-pay" onclick="pay()">Update and Pay</button>
+            <div onclick="location.reload()" style="text-align: center; margin-top: 10px; font-size: 9px; cursor: pointer; color: #aaa; text-transform: uppercase;">Cancel</div>
+        </div>
+
+        <div style="margin-top: 35px; text-align: left; border-top: 1px solid #f0f0f0; padding-top: 25px;">
+            <?php echo do_shortcode('[formidable id=4]'); ?>
         </div>
     </div>
 
     <script>
-    function activateForm() {
-        document.getElementById('p-step-1').style.display = 'none';
-        document.getElementById('purnukka-form-view').style.display = 'block';
-        runRecalc();
+    function showCalc() {
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('p-calc-container').style.display = 'block';
+        recalc();
     }
-
-    function runRecalc() {
+    function recalc() {
         const g = parseInt(document.getElementById('p-guests').value) || 0;
         let n = parseInt(document.getElementById('p-nights').value) || 0;
         if (n < 2) n = 2;
@@ -205,13 +143,11 @@ add_shortcode('purnukka_checkin', function($atts) {
         if (n > 2 && n <= 6) up = 20;
         else if (n > 6 && n <= 13) up = 15;
         else if (n >= 14) up = 10;
-        document.getElementById('p-final-sum').innerText = g * n * up;
+        document.getElementById('p-sum').innerText = g * n * up;
     }
-
-    function proceedToPay() {
-        const sum = document.getElementById('p-final-sum').innerText;
-        // Master Product ID 276
-        window.location.href = window.location.origin + '/checkout/?add-to-cart=276&quantity=' + sum;
+    function pay() {
+        const total = document.getElementById('p-sum').innerText;
+        window.location.href = window.location.origin + '/checkout/?add-to-cart=276&quantity=' + total;
     }
     </script>
 
