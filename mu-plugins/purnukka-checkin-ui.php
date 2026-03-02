@@ -1,19 +1,20 @@
 <?php
 /**
  * Plugin Name: Purnukka Check-in UI (Master)
- * Description: International Master Standard UI with built-in styling container.
- * Version: 1.4.1
+ * Description: International Master Standard UI with built-in styling container and full logic.
+ * Version: 1.4.2
  * Author: Purnukka Group Master
  */
 
 if (!defined('ABSPATH')) exit;
 
 add_shortcode('purnukka_checkin', function($atts) {
+    // Master defaults
     $a = shortcode_atts(array(
         'price'      => '30',
         'minimum'    => '2',
         'product_id' => '276',
-        'form_id'    => '4', // FIXED MASTER ID
+        'form_id'    => '4',
         'title'      => 'Traveler Declaration'
     ), $atts);
 
@@ -26,7 +27,7 @@ add_shortcode('purnukka_checkin', function($atts) {
             --p-bg-light: #fdfdfd;
         }
 
-        /* THE CONTAINER: This creates the "Elementor-look" automatically */
+        /* The Visual Container for professional look */
         .p-master-app-container {
             max-width: 850px;
             margin: 60px auto;
@@ -36,6 +37,7 @@ add_shortcode('purnukka_checkin', function($atts) {
             box-shadow: 0 30px 60px rgba(0,0,0,0.06);
             border: 1px solid #f2f2f2;
             font-family: 'Montserrat', sans-serif;
+            color: #1a2b28;
         }
 
         .p-master-header { text-align: center; margin-bottom: 50px; }
@@ -63,7 +65,7 @@ add_shortcode('purnukka_checkin', function($atts) {
 
         #p-master-form { 
             display: none; margin: 40px 0; text-align: left; padding-bottom: 40px; 
-            border-bottom: 1px solid #eee; animation: pFade 0.4s;
+            border-bottom: 1px solid #eee; 
         }
 
         .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
@@ -83,8 +85,6 @@ add_shortcode('purnukka_checkin', function($atts) {
         .p-btn-gold:hover { background: var(--p-primary); }
 
         .p-form-divider { height: 1px; background: #eee; margin: 60px 0 40px; }
-
-        @keyframes pFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 650px) {
             .p-master-app-container { margin: 20px; padding: 40px 25px; }
@@ -106,7 +106,7 @@ add_shortcode('purnukka_checkin', function($atts) {
             </div>
 
             <div class="p-master-wrapper">
-                <p style="font-size: 16px; color: #555; line-height: 1.8; margin-bottom: 40px;">
+                <p style="font-size: 16px; color: #555; line-height: 1.8; margin-bottom: 40px; text-align: center;">
                     Please complete your traveler declaration to receive your access codes and arrival instructions.
                 </p>
 
@@ -144,7 +144,7 @@ add_shortcode('purnukka_checkin', function($atts) {
                     if ( class_exists( 'FrmFormsController' ) ) {
                         echo FrmFormsController::get_form_shortcode( array( 'id' => $a['form_id'] ) );
                     } else {
-                        echo "<p style='color:red;'>Formtool not active.</p>";
+                        echo "<p style='color:red;'>Form tool (Formidable) not active or Form ID {$a['form_id']} not found.</p>";
                     }
                     ?>
                 </div>
@@ -188,10 +188,12 @@ add_shortcode('purnukka_checkin', function($atts) {
 
     function payPurnukka() {
         const app = document.getElementById('p-master-app');
-        const productId = app.getAttribute('data-pid');
+        const productId = app.getAttribute('data-pid'); // Tämä hakee data-pid arvon (276)
         const total = document.getElementById('p-m-sum').innerText;
         window.location.href = window.location.origin + '/checkout/?add-to-cart=' + productId + '&quantity=' + total;
     }
+
+    // Asetetaan alkusumma valmiiksi
     recalcPurnukka();
     </script>
 
