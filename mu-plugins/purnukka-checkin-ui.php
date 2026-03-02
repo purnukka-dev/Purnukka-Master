@@ -1,141 +1,191 @@
 <?php
 /**
  * Plugin Name: Purnukka Check-in UI (Master)
- * Description: Dynaaminen matkustajailmoituksen laskuri Purnukka Groupin kohteisiin.
- * Version: 1.0.0
+ * Description: International Master Standard UI. Fully English, Formidable ID 4 Integration, and CSS Variables.
+ * Version: 1.3.0
  * Author: Purnukka Group Master
  */
 
 if (!defined('ABSPATH')) exit;
 
 add_shortcode('purnukka_checkin', function($atts) {
-    // 1. MASTER-ASETUKSET (Oletuksena Master-tuote ID 276)
+    // Master defaults - Can be overridden via shortcode attributes
     $a = shortcode_atts(array(
-        'hinta'    => '30',
-        'minimi'   => '2',
-        'tuote_id' => '276', // Master-tuote
-        'otsikko'  => 'Tervetuloa kotiin'
+        'price'      => '30',
+        'minimum'    => '2',
+        'product_id' => '276',
+        'form_id'    => '4', // FIXED MASTER ID
+        'title'      => 'Welcome'
     ), $atts);
 
     ob_start(); ?>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
     <style>
-        /* --- MASTER UI STYLES --- */
-        .p-master-header {
-            background: #ffffff;
-            padding: 50px 20px;
-            text-align: center;
-            border-bottom: 1px solid #f0f0f0;
+        /* CSS VARIABLES - Allows easy branding overrides at the Child level */
+        :root {
+            --p-primary: var(--purnukka-primary, #1a2b28);
+            --p-accent: var(--purnukka-accent, #b89b5e);
+            --p-bg-light: #fdfdfd;
         }
-        .p-master-brand {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: #b89b5e;
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 700;
+
+        .p-master-header { padding: 40px 20px; text-align: center; }
+        .p-master-brand { 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            letter-spacing: 5px; 
+            color: var(--p-accent); 
+            font-weight: 700; 
+            display: block; 
+            margin-bottom: 10px; 
         }
-        .p-master-header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(26px, 7vw, 38px);
-            color: #1a2b28;
-            margin: 0;
-            font-weight: 400;
+        .p-master-header h1 { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 32px; 
+            color: var(--p-primary); 
+            margin: 0; 
         }
-        .p-master-wrapper {
-            font-family: 'Montserrat', sans-serif;
-            max-width: 850px;
-            margin: -30px auto 50px auto;
-            padding: 40px;
-            background: #ffffff;
+        
+        .p-master-wrapper { 
+            max-width: 700px; 
+            margin: 0 auto 60px; 
+            padding: 0 20px; 
             text-align: center; 
-            box-shadow: 0px 15px 40px rgba(0,0,0,0.06);
-            border: 1px solid #eee;
-            position: relative;
-            z-index: 5;
+            font-family: 'Montserrat', sans-serif;
         }
-        .p-master-icon { color: #b89b5e; font-size: 32px; margin-bottom: 15px; display: block; }
-        .p-master-box {
-            background: #fdfdfd;
-            border: 1px solid #1a2b28;
-            border-left: 6px solid #b89b5e; 
-            padding: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+
+        .p-master-box { 
+            background: var(--p-bg-light); 
+            border: 1px solid #f0f0f0;
+            border-top: 4px solid var(--p-accent); 
+            padding: 30px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
             text-align: left;
-            margin-top: 25px;
-            gap: 20px;
+            margin: 30px 0; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
         }
-        .p-btn-dark {
-            background: #1a2b28; color: #fff; border: none; padding: 14px 22px;
-            font-weight: 700; text-transform: uppercase; font-size: 11px; cursor: pointer; transition: 0.3s;
+        
+        .p-btn-dark { 
+            background: var(--p-primary); 
+            color: #fff; 
+            border: none; 
+            padding: 15px 25px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            font-size: 11px; 
+            cursor: pointer; 
+            transition: 0.3s; 
         }
-        .p-btn-dark:hover { background: #b89b5e; }
-        #p-master-form { display: none; margin-top: 30px; text-align: left; animation: pFade 0.4s; }
-        .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .p-input-box { border: 1px solid #b89b5e; padding: 12px; background: #fff; }
-        .p-input-box label { display: block; font-size: 10px; color: #888; text-transform: uppercase; font-weight: 700; }
-        .p-input-box input { border: none; width: 100%; font-weight: 700; font-size: 20px; color: #1a2b28; outline: none; }
-        .p-price-display { border-top: 1px solid #eee; padding-top: 20px; text-align: center; margin-bottom: 25px; }
-        .p-price-total { font-size: 36px; font-weight: 700; color: #1a2b28; display: block; }
-        .p-price-note { font-size: 11px; color: #b89b5e; font-weight: 700; text-transform: uppercase; }
-        .p-btn-gold {
-            background: #b89b5e; color: #fff; border: none; padding: 16px; width: 100%;
-            font-weight: 700; text-transform: uppercase; cursor: pointer; font-size: 12px;
+        .p-btn-dark:hover { background: var(--p-accent); }
+        
+        #p-master-form { 
+            display: none; 
+            margin: 40px 0; 
+            text-align: left; 
+            padding-bottom: 40px; 
+            border-bottom: 1px solid #eee; 
         }
-        @keyframes pFade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        @media (max-width: 600px) {
-            .p-master-box { flex-direction: column; text-align: center; }
-            .p-btn-dark { width: 100%; }
-            .p-grid { grid-template-columns: 1fr; }
+
+        .p-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+
+        .p-input-box { border: 1px solid #eee; padding: 15px; background: #fff; }
+        .p-input-box label { 
+            display: block; 
+            font-size: 9px; 
+            color: var(--p-accent); 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            margin-bottom: 5px;
+        }
+        .p-input-box input { 
+            border: none; 
+            width: 100%; 
+            font-weight: 700; 
+            font-size: 22px; 
+            color: var(--p-primary); 
+            outline: none; 
+        }
+        
+        .p-price-display { text-align: center; margin-bottom: 30px; }
+        .p-price-total { font-size: 42px; font-weight: 700; color: var(--p-primary); display: block; }
+        .p-price-note { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .p-btn-gold { 
+            background: var(--p-accent); 
+            color: #fff; 
+            border: none; 
+            padding: 20px; 
+            width: 100%; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+            font-size: 13px; 
+            letter-spacing: 2px;
+        }
+        .p-btn-gold:hover { background: var(--p-primary); }
+
+        @media (max-width: 600px) { 
+            .p-master-box { flex-direction: column; text-align: center; gap: 20px; } 
+            .p-grid { grid-template-columns: 1fr; } 
         }
     </style>
 
     <div id="p-master-app" 
-         data-hinta="<?php echo esc_attr($a['hinta']); ?>" 
-         data-minimi="<?php echo esc_attr($a['minimi']); ?>" 
-         data-pid="<?php echo esc_attr($a['tuote_id']); ?>">
-
+         data-price="<?php echo esc_attr($a['price']); ?>" 
+         data-min="<?php echo esc_attr($a['minimum']); ?>" 
+         data-pid="<?php echo esc_attr($a['product_id']); ?>">
+        
         <div class="p-master-header">
-            <span class="p-master-brand">Purnukka Group Master</span>
-            <h1><?php echo esc_html($a['otsikko']); ?></h1>
+            <span class="p-master-brand">Purnukka Group</span>
+            <h1><?php echo esc_html($a['title']); ?></h1>
+            <div style="width: 40px; height: 1px; background-color: var(--p-accent); margin: 25px auto;"></div>
         </div>
 
         <div class="p-master-wrapper">
-            <i class="fas fa-key p-master-icon"></i>
-            <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #1a2b28; margin-bottom: 10px;">Check-in & Matkustajailmoitus</h2>
-            <p style="font-size: 14px; color: #666;">Varmistathan majoittujien tiedot vakuutusturvaa varten.</p>
+            <p style="font-size: 15px; color: #666; line-height: 1.6;">Please complete your traveler declaration to receive your access codes and arrival instructions.</p>
 
             <div class="p-master-box" id="p-gate-master">
                 <div>
-                    <strong>Onko seurueenne koko muuttunut?</strong><br>
-                    <span style="font-size: 12px;">Lisää puuttuvat henkilöt varaukseenne tästä.</span>
+                    <strong style="color: var(--p-primary); font-size: 16px;">Change in group size?</strong><br>
+                    <span style="font-size: 13px; color: #888;">Add additional guests and pay for extra beds here.</span>
                 </div>
-                <button class="p-btn-dark" onclick="initPurnukkaMaster()">Lisää henkilöitä</button>
+                <button class="p-btn-dark" onclick="initPurnukkaMaster()">Add Guests</button>
             </div>
 
             <div id="p-master-form">
                 <div class="p-grid">
                     <div class="p-input-box">
-                        <label>Lisähenkilöt (kpl)</label>
-                        <input type="number" id="p-m-guests" value="1" min="1" oninput="recalcPurnukkaMaster()">
+                        <label>Additional Guests</label>
+                        <input type="number" id="p-m-guests" value="1" min="1" oninput="recalcPurnukka()">
                     </div>
                     <div class="p-input-box">
-                        <label>Yöpymiset (vrk)</label>
-                        <input type="number" id="p-m-nights" value="<?php echo esc_attr($a['minimi']); ?>" min="<?php echo esc_attr($a['minimi']); ?>" oninput="recalcPurnukkaMaster()">
+                        <label>Nights</label>
+                        <input type="number" id="p-m-nights" value="<?php echo esc_attr($a['minimum']); ?>" min="<?php echo esc_attr($a['minimum']); ?>" oninput="recalcPurnukka()">
                     </div>
                 </div>
                 <div class="p-price-display">
-                    <span id="p-m-note" class="p-price-note">LASKETAAN...</span>
+                    <span id="p-m-note" class="p-price-note">Standard Rate</span>
                     <span class="p-price-total"><span id="p-m-sum">0</span> €</span>
                 </div>
-                <button class="p-btn-gold" onclick="payPurnukkaMaster()">Päivitä ja Maksa</button>
-                <div onclick="location.reload()" style="text-align: center; margin-top: 15px; font-size: 11px; cursor: pointer; color: #888; text-transform: uppercase;">Peruuta</div>
+                <button class="p-btn-gold" onclick="payPurnukka()">Update & Pay</button>
+                <div onclick="location.reload()" style="text-align: center; margin-top: 20px; font-size: 10px; cursor: pointer; color: #bbb; text-transform: uppercase; letter-spacing: 1px;">Cancel</div>
+            </div>
+
+            <div style="margin-top: 50px; text-align: left;">
+                <?php 
+                if ( class_exists( 'FrmFormsController' ) ) {
+                    echo FrmFormsController::get_form_shortcode( array( 'id' => $a['form_id'] ) );
+                } else {
+                    echo "<p style='color:red;'>Form tool not active or Form ID {$a['form_id']} not found.</p>";
+                }
+                ?>
             </div>
         </div>
     </div>
@@ -144,32 +194,45 @@ add_shortcode('purnukka_checkin', function($atts) {
     function initPurnukkaMaster() {
         document.getElementById('p-gate-master').style.display = 'none';
         document.getElementById('p-master-form').style.display = 'block';
-        recalcPurnukkaMaster();
+        recalcPurnukka();
     }
-    function recalcPurnukkaMaster() {
-        const app = document.getElementById('p-master-app');
-        const hBase = parseInt(app.getAttribute('data-hinta'));
-        const g = parseInt(document.getElementById('p-m-guests').value) || 0;
-        let n = parseInt(document.getElementById('p-m-nights').value) || 0;
-        const mN = parseInt(app.getAttribute('data-minimi'));
-        if (n < mN) n = mN;
 
-        let curP = hBase;
-        let note = "PERUSHINTA ("+hBase+"€/YÖ)";
+    function recalcPurnukka() {
+        const app = document.getElementById('p-master-app');
+        const basePrice = parseInt(app.getAttribute('data-price'));
+        const guests = parseInt(document.getElementById('p-m-guests').value) || 0;
+        let nights = parseInt(document.getElementById('p-m-nights').value) || 0;
+        const minNights = parseInt(app.getAttribute('data-min'));
         
-        if (n > 2 && n <= 6) { curP = 20; note = "KESKIPITKÄ ETU (20€/YÖ)"; }
-        else if (n > 6 && n <= 13) { curP = 15; note = "VIIKKOETU (15€/YÖ)"; }
-        else if (n >= 14) { curP = 10; note = "PITKÄAIKAISETU (10€/YÖ)"; }
+        if (nights < minNights) nights = minNights;
 
-        document.getElementById('p-m-sum').innerText = g * n * curP;
-        document.getElementById('p-m-note').innerText = note;
+        let currentPrice = basePrice;
+        let rateNote = "STANDARD RATE (" + basePrice + "€/NIGHT)";
+        
+        if (nights > 2 && nights <= 6) { 
+            currentPrice = 20; 
+            rateNote = "MID-TERM DISCOUNT (20€/NIGHT)"; 
+        } else if (nights > 6 && nights <= 13) { 
+            currentPrice = 15; 
+            rateNote = "WEEKLY DISCOUNT (15€/NIGHT)"; 
+        } else if (nights >= 14) { 
+            currentPrice = 10; 
+            rateNote = "LONG-STAY DISCOUNT (10€/NIGHT)"; 
+        }
+
+        document.getElementById('p-m-sum').innerText = guests * nights * currentPrice;
+        document.getElementById('p-m-note').innerText = rateNote;
     }
-    function payPurnukkaMaster() {
+
+    function payPurnukka() {
         const app = document.getElementById('p-master-app');
-        const pid = app.getAttribute('data-pid');
-        const sum = document.getElementById('p-m-sum').innerText;
-        window.location.href = window.location.origin + '/checkout/?add-to-cart=' + pid + '&quantity=' + sum;
+        const productId = app.getAttribute('data-pid');
+        const total = document.getElementById('p-m-sum').innerText;
+        window.location.href = window.location.origin + '/checkout/?add-to-cart=' + productId + '&quantity=' + total;
     }
+    
+    // Initial calculation
+    recalcPurnukka();
     </script>
 
     <?php
