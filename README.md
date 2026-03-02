@@ -52,6 +52,22 @@ All environment-specific settings are managed via a protected JSON file:
 - **v0.5**: Refined AI Controller with English-first logic.
 - **v0.4**: Integrated Tier-based Access Control and dynamic branding.
 - **v0.2**: Initial GitHub Actions deployment setup.
+## 🛎️ Check-in & Matkustajailmoitus (UI)
 
+Tämä komponentti hoitaa dynaamisen lisähenkilöiden laskennan ja ohjauksen kassalle. Se on eriytetty kassan taustalogiikasta ylläpidon helpottamiseksi.
+
+### Käyttöönotto Child-sivustolla
+Lisää haluamallesi sivulle seuraava shortcode:
+
+`[purnukka_checkin hinta="30" minimi="2" tuote_id="276"]`
+
+### Parametrit:
+* `hinta`: Perushinta per yö (oletus 30). Laskee automaattisesti portaat: 3-6 yötä (20€), 7-13 yötä (15€), 14+ yötä (10€).
+* `minimi`: Minimiyöpyminen, joka pakotetaan laskurissa (oletus 2).
+* `tuote_id`: WooCommerce-tuotteen ID, joka vastaa 1€ arvoista "Purnukka Flex" -tuotetta (Master-oletus: 276).
+* `otsikko`: Vaihtoehtoinen tervetulotoivotus (oletus: "Tervetuloa kotiin").
+
+### Tiedostot:
+* `mu-plugins/purnukka-checkin-ui.php`: Käyttöliittymä, laskentalogiikka (JS) ja tyylit (CSS).
 ---
 *Created and maintained by Purn
