@@ -12,36 +12,47 @@ add_shortcode('purnukka_checkin', function($atts) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* TÄMÄ ON SE KORJAUS: Jätetään tilaa vasemmalle pystypalkille */
-        .p-master-layout-fix {
-            margin-left: 80px; /* Tämä antaa tilaa sille MASTER-VILLA-NAME -palkille */
-            padding: 20px;
-        }
+    /* PAKOTETAAN SIVU LEVIÄMÄÄN MASTERISSA */
+    .p-master-layout-fix {
+        width: 100vw !important;
+        position: relative !important;
+        left: 50% !important;
+        right: 50% !important;
+        margin-left: -50vw !important;
+        margin-right: -50vw !important;
+        padding-left: 80px; /* Tilaa sille pystypalkille */
+        box-sizing: border-box;
+    }
 
-        .purnukka-premium-wrapper {
-            font-family: 'Montserrat', sans-serif;
-            max-width: 800px;
-            margin: 0 auto 60px auto; 
-            padding: 40px;
-            background: #ffffff;
-            text-align: center; 
-            box-shadow: 0px 20px 50px rgba(0,0,0,0.06);
-            border-radius: 4px;
-            border: 1px solid #f0f0f0;
-        }
-        
-        .p-brand-label { font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: #b89b5e; font-weight: bold; display: block; margin-bottom: 10px; }
-        .purnukka-welcome-header h1 { font-family: 'Playfair Display', serif; font-size: 42px; color: #1a2b28; margin: 0; }
-        
-        /* Pidetään muu logiikka samana */
-        .p-step-box { background: #fdfdfd; border: 1px solid #1a2b28; border-left: 6px solid #b89b5e; padding: 30px; display: flex; align-items: center; justify-content: space-between; text-align: left; margin-top: 30px; }
-        #purnukka-form-view { display: none; margin-top: 30px; text-align: left; }
-        .p-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-        .p-input-field { background: #fff; border: 1px solid #b89b5e; padding: 15px; }
-        .btn-p-gold { background: #b89b5e; color: #fff; border: none; padding: 18px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; }
-        
-        @media (max-width: 900px) { .p-master-layout-fix { margin-left: 0; } }
-    </style>
+    .purnukka-premium-wrapper {
+        font-family: 'Montserrat', sans-serif;
+        max-width: 850px !important; /* Laskurin maksimileveys */
+        margin: 0 auto 60px auto !important; 
+        padding: 40px;
+        background: #ffffff;
+        text-align: center; 
+        box-shadow: 0px 20px 50px rgba(0,0,0,0.06);
+        border-radius: 4px;
+        border: 1px solid #f0f0f0;
+    }
+    
+    /* Pidetään muu logiikka ja ulkoasu samana kuin aiemmin */
+    .p-brand-label { font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: #b89b5e; font-weight: bold; display: block; margin-bottom: 10px; }
+    .purnukka-welcome-header h1 { font-family: 'Playfair Display', serif; font-size: 42px; color: #1a2b28; margin: 0; text-align: center; }
+    .p-step-box { background: #fdfdfd; border: 1px solid #1a2b28; border-left: 6px solid #b89b5e; padding: 30px; display: flex; align-items: center; justify-content: space-between; text-align: left; margin-top: 30px; }
+    #purnukka-form-view { display: none; margin-top: 30px; text-align: left; }
+    .btn-p-gold { background: #b89b5e; color: #fff; border: none; padding: 18px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; }
+
+    @media (max-width: 900px) { 
+        .p-master-layout-fix { 
+            margin-left: 0 !important; 
+            margin-right: 0 !important; 
+            left: 0 !important; 
+            width: 100% !important;
+            padding-left: 20px; 
+        } 
+    }
+</style>
 
     <div class="p-master-layout-fix">
         <div style="text-align:center; padding: 40px 0;">
