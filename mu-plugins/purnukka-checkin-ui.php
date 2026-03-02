@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master Original
- * Description: Alkuperäinen visuaalinen asettelu. Tuote ID 276 ja Formidable ID 4.
+ * Plugin Name: Purnukka Check-in Master (Original Logic + ID 276)
+ * Description: Alkuperäinen 2-vaiheinen valinta, ID 276 ja Formidable 4.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -12,39 +12,10 @@ add_shortcode('purnukka_checkin', function($atts) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        /* 1. PREMIUM HEADER - PUHDAS JA RAIKAS */
-        .purnukka-welcome-header {
-            background: #ffffff;
-            padding: 60px 20px 40px 20px;
-            text-align: center;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .p-brand-label {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: #b89b5e;
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .purnukka-welcome-header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(28px, 8vw, 42px);
-            color: #1a2b28;
-            margin: 0;
-            font-weight: 400;
-            letter-spacing: -1px;
-        }
-
-        /* 2. MASTER CONTAINER - LEIJUVA BALANSSI */
         .purnukka-premium-wrapper {
             font-family: 'Montserrat', sans-serif;
             max-width: 850px;
-            margin: -30px auto 60px auto; 
+            margin: 40px auto;
             padding: 40px;
             background: #ffffff;
             text-align: center; 
@@ -52,13 +23,11 @@ add_shortcode('purnukka_checkin', function($atts) {
             border-radius: 4px;
             border: 1px solid #f0f0f0;
             box-sizing: border-box;
-            position: relative;
-            z-index: 10;
         }
 
         .p-top-icon { color: #b89b5e; font-size: 36px; margin-bottom: 20px; display: block; }
 
-        /* 3. VAIHE 1: ALOITUSLAATIKKO */
+        /* VAIHE 1: ALOITUSLAATIKKO (Se 2-osainen valinta) */
         .p-step-box {
             background: #fdfdfd;
             border: 1px solid #1a2b28;
@@ -86,9 +55,7 @@ add_shortcode('purnukka_checkin', function($atts) {
             white-space: nowrap;
         }
 
-        .btn-p-dark:hover { background: #b89b5e; }
-
-        /* 4. VAIHE 2: LOMAKE (Dynaaminen) */
+        /* VAIHE 2: LOMAKE (Piilotettu aluksi) */
         #purnukka-form-view {
             display: none;
             margin-top: 30px;
@@ -148,32 +115,20 @@ add_shortcode('purnukka_checkin', function($atts) {
             text-transform: uppercase;
             cursor: pointer;
             font-size: 13px;
-            transition: 0.3s;
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 650px) {
-            .purnukka-premium-wrapper { padding: 30px 15px; margin-top: -20px; }
-            .p-step-box { flex-direction: column; text-align: center; padding: 25px; }
-            .btn-p-dark { width: 100%; }
+            .p-step-box { flex-direction: column; text-align: center; }
             .p-input-row { grid-template-columns: 1fr; }
-            .p-price-total { font-size: 32px; }
         }
     </style>
 
-    <div class="purnukka-welcome-header">
-        <span class="p-brand-label">Purnukka Group</span>
-        <h1>Tervetuloa kotiin</h1>
-    </div>
-
     <div class="purnukka-premium-wrapper">
         <i class="fas fa-key p-top-icon"></i> 
-        <h2 style="font-family: 'Playfair Display', serif; font-size: 28px; color: #1a2b28; margin: 0 0 15px 0; border-bottom: 2px solid #b89b5e; display: inline-block; padding-bottom: 6px;">Matkustajailmoitus & Check-in</h2>
-        <p style="font-size: 14px; color: #666; margin: 10px auto 30px auto; max-width: 650px; line-height: 1.6;">
-            Lainmukainen matkustajailmoitus takaa teille turvallisen loman ja varmistaa vakuutusturvan voimassaolon koko viipymänne ajaksi.
-        </p>
-
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 28px; color: #1a2b28; margin: 0 0 15px 0;">Matkustajailmoitus & Check-in</h2>
+        
         <div class="p-step-box" id="p-step-1">
             <div>
                 <strong style="color: #1a2b28; font-size: 16px;">Onko seurueenne koko muuttunut?</strong><br>
@@ -183,15 +138,15 @@ add_shortcode('purnukka_checkin', function($atts) {
         </div>
 
         <div id="purnukka-form-view">
-            <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #1a2b28; margin-bottom: 20px; text-align: left;">Lisää henkilöitä varaukseen</h3>
+            <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #1a2b28; margin-bottom: 20px;">Lisää henkilöitä varaukseen</h3>
             
             <div class="p-input-row">
                 <div class="p-input-field">
-                    <label><i class="fas fa-users"></i> Lisähenkilöt (kpl)</label>
+                    <label>Lisähenkilöt (kpl)</label>
                     <input type="number" id="p-guests" value="1" min="1" oninput="runRecalc()">
                 </div>
                 <div class="p-input-field">
-                    <label><i class="fas fa-moon"></i> Yöpymiset (vrk)</label>
+                    <label>Yöpymiset (vrk)</label>
                     <input type="number" id="p-nights" value="2" min="2" oninput="runRecalc()">
                 </div>
             </div>
@@ -202,10 +157,10 @@ add_shortcode('purnukka_checkin', function($atts) {
             </div>
 
             <button class="btn-p-gold" onclick="proceedToPay()">Päivitä ja Maksa</button>
-            <div onclick="location.reload()" style="text-align: center; margin-top: 15px; font-size: 11px; cursor: pointer; color: #888; text-transform: uppercase; letter-spacing: 1px;">Peruuta</div>
+            <div onclick="location.reload()" style="text-align: center; margin-top: 15px; font-size: 11px; cursor: pointer; color: #888; text-transform: uppercase;">Peruuta</div>
         </div>
 
-        <div style="margin-top: 50px; text-align: left;">
+        <div style="margin-top: 50px; text-align: left; border-top: 1px solid #eee; padding-top: 30px;">
             <?php echo do_shortcode('[formidable id=4]'); ?>
         </div>
     </div>
@@ -221,21 +176,15 @@ add_shortcode('purnukka_checkin', function($atts) {
         const g = parseInt(document.getElementById('p-guests').value) || 0;
         let n = parseInt(document.getElementById('p-nights').value) || 0;
         if (n < 2) n = 2;
-
         let up = 30;
-        let note = "PERUSHINTA (30€/YÖ)";
-
-        if (n > 2 && n <= 6) { up = 20; note = "KESKIPITKÄ ETU (20€/YÖ)"; }
-        else if (n > 6 && n <= 13) { up = 15; note = "VIIKKOETU (15€/YÖ)"; }
-        else if (n >= 14) { up = 10; note = "PITKÄAIKAISETU (10€/YÖ)"; }
-
+        if (n > 2 && n <= 6) up = 20;
+        else if (n > 6 && n <= 13) up = 15;
+        else if (n >= 14) up = 10;
         document.getElementById('p-final-sum').innerText = g * n * up;
-        document.getElementById('p-info').innerText = note;
     }
 
     function proceedToPay() {
         const sum = document.getElementById('p-final-sum').innerText;
-        // Master-tuotteen ID 276
         window.location.href = window.location.origin + '/checkout/?add-to-cart=276&quantity=' + sum;
     }
     </script>
