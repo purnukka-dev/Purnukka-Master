@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (Gold Button Fix)
- * Description: Premium styling, large typography, all icons. Fixed gold button states. Product ID 276.
+ * Plugin Name: Purnukka Check-in Master (Gold "Welcome home")
+ * Description: Premium styling, large typography, all icons. Fixed gold button states. Added gold "Welcome home". Product ID 276. URL: /payment-checkout/
  */
 
 if (!defined('ABSPATH')) exit;
@@ -34,10 +34,11 @@ add_shortcode('purnukka_checkin', function($atts) {
             margin-bottom: 8px;
         }
 
+        /* 1. TÄSSÄ SE KORJAUS: "Welcome home" kultaiseksi */
         .purnukka-welcome-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 48px;
-            color: #1a2b28;
+            color: #b89b5e; /* Kulta-väri */
             margin: 0;
             font-weight: 400;
             font-style: italic;
@@ -116,9 +117,8 @@ add_shortcode('purnukka_checkin', function($atts) {
         .p-price-note { font-size: 10px; color: #b89b5e; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .p-price-total { font-size: 38px; font-weight: bold; color: #1a2b28; display: block; line-height: 1; margin-top: 5px; }
 
-        /* KULTAINEN NAPPI - KORJATTU */
         .btn-p-gold {
-            background: #b89b5e !important; /* Pakotettu kulta */
+            background: #b89b5e !important; 
             color: #fff !important;
             border: none;
             padding: 18px;
@@ -132,12 +132,10 @@ add_shortcode('purnukka_checkin', function($atts) {
             box-shadow: 0 4px 15px rgba(184, 155, 94, 0.2);
         }
 
-        /* Hover-tila: Hieman tummempi kulta, ei musta */
         .btn-p-gold:hover {
             background: #a68a52 !important; 
         }
 
-        /* Active-tila: Kun nappia painetaan alas */
         .btn-p-gold:active {
             background: #8e7646 !important;
             transform: translateY(1px);
