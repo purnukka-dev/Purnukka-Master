@@ -1,21 +1,19 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in UI (Production Match v1.3.1)
- * Description: Logic matched 1:1 with production code, UI styled for Master Standard.
- * Version: 1.3.1
- * Author: Purnukka Group Master
+ * Plugin Name: Purnukka Check-in UI (Header Match v1.3.3)
+ * Description: 1:1 visual match with production, focusing on the top "Purnukka Group" branding.
+ * Version: 1.3.3
  */
 
 if (!defined('ABSPATH')) exit;
 
 add_shortcode('purnukka_checkin', function($atts) {
-    // 1. MASTER SETTINGS & DYNAMIC ROUTING
     $checkout_url = function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : site_url('/payment-checkout/');
 
     $a = shortcode_atts(array(
         'rate'       => '30',
         'min_stay'   => '2',
-        'product_id' => '3775', // Production Flex Product ID
+        'product_id' => '3775', 
         'form_id'    => '4', 
         'title'      => 'Welcome Home'
     ), $atts);
@@ -25,182 +23,216 @@ add_shortcode('purnukka_checkin', function($atts) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* UI WRAPPER */
-        .p-master-premium-wrapper {
+        /* 1. TÄMÄ ON SE PUUTTUVA YLÄOSA (Branding Header) */
+        .p-master-branding-top {
+            text-align: center;
+            padding: 40px 0 20px 0;
+            background: #ffffff;
+        }
+        .p-brand-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #b89b5e;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .p-main-title-top {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            color: #1a2b28;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        /* 2. FLOATING CONTENT WRAPPER */
+        .p-master-float-card {
             font-family: 'Montserrat', sans-serif;
             max-width: 850px;
-            margin: 0 auto 60px;
-            padding: 40px;
+            margin: 0 auto 60px auto; 
+            padding: 50px 40px;
             background: #ffffff;
             text-align: center; 
             box-shadow: 0px 20px 50px rgba(0,0,0,0.06);
             border-radius: 4px;
             border: 1px solid #f0f0f0;
-            box-sizing: border-box;
+            position: relative;
+            z-index: 10;
         }
 
-        /* PHASE 1: START BOX (Matched to Production Border/Gold) */
-        .p-step-box-master {
+        .p-key-icon { color: #b89b5e; font-size: 36px; margin-bottom: 25px; display: block; }
+
+        .p-underline-header {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            color: #1a2b28;
+            margin: 0 0 15px 0;
+            border-bottom: 2px solid #b89b5e;
+            display: inline-block;
+            padding-bottom: 8px;
+        }
+
+        /* 3. PHASE 1: START BOX */
+        .p-gate-box-prod {
             background: #fdfdfd;
             border: 1px solid #1a2b28;
-            border-left: 8px solid #b89b5e; 
-            padding: 30px;
+            border-left: 10px solid #b89b5e; 
+            padding: 35px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             text-align: left;
-            margin-top: 30px;
-            gap: 20px;
+            margin-top: 40px;
+            gap: 25px;
         }
 
-        /* PHASE 2: CALC VIEW (Hidden by default) */
-        #p-master-form-view {
-            display: none; /* Fixed: Initial state */
-            margin-top: 30px;
+        /* 4. PHASE 2: CALCULATOR (Initially hidden) */
+        #p-calc-view-prod {
+            display: none; 
+            margin-top: 40px;
             text-align: left;
         }
 
-        /* INPUT STYLING */
-        .p-input-row-master {
+        .p-input-grid-prod {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
-        .p-input-field-master {
+        .p-field-card-prod {
             background: #fff;
-            border: 1px solid #b89b5e; /* Production gold border */
-            padding: 15px;
+            border: 1px solid #b89b5e;
+            padding: 18px 20px;
         }
 
-        .p-input-field-master label {
+        .p-field-card-prod label {
             display: block;
             font-size: 10px;
             color: #888;
             text-transform: uppercase;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 700;
         }
+        .p-field-card-prod label i { margin-right: 10px; color: #666; font-size: 12px; }
 
-        .p-input-field-master input {
+        .p-field-card-prod input {
             border: none;
             width: 100%;
-            font-weight: bold;
-            font-size: 22px;
+            font-weight: 700;
+            font-size: 24px;
             color: #1a2b28;
             outline: none;
             background: transparent;
         }
 
-        /* SUMMARY & BUTTONS */
-        .p-price-summary-master {
+        .p-summary-prod {
             border-top: 2px solid #f8f8f8;
-            padding-top: 25px;
-            margin-bottom: 30px;
+            padding-top: 30px;
+            margin-bottom: 40px;
             text-align: center;
         }
+        .p-note-prod { font-size: 11px; color: #b89b5e; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .p-total-prod { font-size: 52px; font-weight: 700; color: #1a2b28; display: block; line-height: 1; margin-top: 10px; }
 
-        .p-price-note-master { font-size: 11px; color: #b89b5e; font-weight: bold; text-transform: uppercase; }
-        .p-price-total-master { font-size: 40px; font-weight: bold; color: #1a2b28; display: block; }
-
-        .btn-p-gold-master { background: #b89b5e; color: #fff; border: none; padding: 18px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 13px; transition: 0.3s; }
-        .btn-p-dark-master { background: #1a2b28; color: #fff; border: none; padding: 14px 25px; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: 0.3s; white-space: nowrap; }
+        .p-btn-gold-prod { background: #b89b5e; color: #fff; border: none; padding: 22px; width: 100%; font-weight: 700; text-transform: uppercase; cursor: pointer; font-size: 14px; letter-spacing: 2px; }
+        .p-btn-dark-prod { background: #1a2b28; color: #fff; border: none; padding: 15px 30px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; cursor: pointer; }
 
         @media (max-width: 650px) {
-            .p-input-row-master { grid-template-columns: 1fr; }
-            .p-step-box-master { flex-direction: column; text-align: center; }
+            .p-input-grid-prod { grid-template-columns: 1fr; }
+            .p-gate-box-prod { flex-direction: column; text-align: center; }
         }
     </style>
 
-    <div id="p-master-app-root" 
+    <div id="p-master-standard-root" 
          data-rate="<?php echo esc_attr($a['rate']); ?>" 
          data-min-stay="<?php echo esc_attr($a['min_stay']); ?>" 
          data-product-id="<?php echo esc_attr($a['product_id']); ?>"
          data-checkout-url="<?php echo esc_url($checkout_url); ?>">
 
-        <div style="text-align: center; padding: 40px 0;">
-            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: #b89b5e; font-weight: bold; display: block; margin-bottom: 10px;">Purnukka Group</span>
-            <h1 style="font-family: 'Playfair Display', serif; font-size: 42px; color: #1a2b28; margin: 0; font-weight: 400;"><?php echo esc_html($a['title']); ?></h1>
+        <div class="p-master-branding-top">
+            <span class="p-brand-text">Purnukka Group</span>
+            <h1 class="p-main-title-top"><?php echo esc_html($a['title']); ?></h1>
         </div>
 
-        <div class="p-master-premium-wrapper">
-            <i class="fas fa-key" style="color: #b89b5e; font-size: 36px; margin-bottom: 20px; display: block;"></i> 
-            <h2 style="font-family: 'Playfair Display', serif; font-size: 28px; color: #1a2b28; margin: 0 0 15px 0; border-bottom: 2px solid #b89b5e; display: inline-block; padding-bottom: 6px;">Check-in & Declaration</h2>
-            <p style="font-size: 14px; color: #666; margin-bottom: 30px; line-height: 1.6;">
+        <div class="p-master-float-card">
+            <i class="fas fa-key p-key-icon"></i> 
+            <h2 class="p-underline-header">Check-in & Declaration</h2>
+            <p style="font-size: 15px; color: #666; margin: 10px auto 40px auto; max-width: 650px; line-height: 1.7;">
                 The mandatory traveler declaration ensures a safe stay and keeps your insurance coverage active throughout your visit.
             </p>
 
-            <div class="p-step-box-master" id="p-master-step-1">
+            <div class="p-gate-box-prod" id="p-gate-ui">
                 <div>
-                    <strong style="color: #1a2b28; font-size: 16px;">Change in group size?</strong><br>
-                    <span style="font-size: 12px; color: #666;">Add and pay for additional guests here.</span>
+                    <strong style="color: #1a2b28; font-size: 17px;">Change in group size?</strong><br>
+                    <span style="font-size: 13px; color: #666;">Add and pay for additional guests here.</span>
                 </div>
-                <button class="btn-p-dark-master" onclick="activateMasterCalc()">Add Guests</button>
+                <button class="p-btn-dark-prod" onclick="pShowCalc()">Add Guests</button>
             </div>
 
-            <div id="p-master-form-view">
-                <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #1a2b28; margin-bottom: 20px;">Add guests to booking</h3>
+            <div id="p-calc-view-prod">
+                <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #1a2b28; margin-bottom: 25px; text-align: left;">Add guests to booking</h3>
                 
-                <div class="p-input-row-master">
-                    <div class="p-input-field-master">
+                <div class="p-input-grid-prod">
+                    <div class="p-field-card-prod">
                         <label><i class="fas fa-users"></i> Additional Guests</label>
-                        <input type="number" id="p-m-guests" value="1" min="1" oninput="runMasterRecalc()">
+                        <input type="number" id="p-g-in" value="1" min="1" oninput="pRecalc()">
                     </div>
-                    <div class="p-input-field-master">
+                    <div class="p-field-card-prod">
                         <label><i class="fas fa-moon"></i> Nights</label>
-                        <input type="number" id="p-m-nights" value="<?php echo esc_attr($a['min_stay']); ?>" min="<?php echo esc_attr($a['min_stay']); ?>" oninput="runMasterRecalc()">
+                        <input type="number" id="p-n-in" value="<?php echo esc_attr($a['min_stay']); ?>" min="<?php echo esc_attr($a['min_stay']); ?>" oninput="pRecalc()">
                     </div>
                 </div>
 
-                <div class="p-price-summary-master">
-                    <span id="p-m-info" class="p-price-note-master">STANDARD RATE (<?php echo $a['rate']; ?>€/NIGHT)</span>
-                    <span class="p-price-total-master"><span id="p-m-final-sum">0</span> €</span>
+                <div class="p-summary-prod">
+                    <span id="p-note-ui" class="p-note-prod">STANDARD RATE (<?php echo $a['rate']; ?>€/NIGHT)</span>
+                    <span class="p-total-prod"><span id="p-sum-ui">0</span> €</span>
                 </div>
 
-                <button class="btn-p-gold-master" onclick="proceedToMasterPay()">Update & Pay Now</button>
-                <div onclick="location.reload()" style="text-align: center; margin-top: 15px; font-size: 11px; cursor: pointer; color: #888; text-transform: uppercase; letter-spacing: 1px;">Cancel</div>
+                <button class="p-btn-gold-prod" onclick="pProceedToPay()">Update & Pay Now</button>
+                <div onclick="location.reload()" style="text-align: center; margin-top: 20px; font-size: 11px; cursor: pointer; color: #aaa; text-transform: uppercase; letter-spacing: 2px;">Cancel</div>
             </div>
 
-            <div style="margin-top: 60px; text-align: left; border-top: 1px solid #eee; padding-top: 40px;">
+            <div style="margin-top: 80px; text-align: left; border-top: 1px solid #eee; padding-top: 50px;">
                 <?php echo do_shortcode('[formidable id=' . esc_attr($a['form_id']) . ']'); ?>
             </div>
         </div>
     </div>
 
     <script>
-    function activateMasterCalc() {
-        document.getElementById('p-master-step-1').style.display = 'none';
-        document.getElementById('p-master-form-view').style.display = 'block';
-        runMasterRecalc();
+    function pShowCalc() {
+        document.getElementById('p-gate-ui').style.display = 'none';
+        document.getElementById('p-calc-view-prod').style.display = 'block';
+        pRecalc();
     }
 
-    function runMasterRecalc() {
-        const app = document.getElementById('p-master-app-root');
-        const baseRate = parseInt(app.getAttribute('data-rate'));
-        const g = parseInt(document.getElementById('p-m-guests').value) || 0;
-        let n = parseInt(document.getElementById('p-m-nights').value) || 0;
+    function pRecalc() {
+        const app = document.getElementById('p-master-standard-root');
+        const rateBase = parseInt(app.getAttribute('data-rate'));
+        const g = parseInt(document.getElementById('p-g-in').value) || 0;
+        let n = parseInt(document.getElementById('p-n-in').value) || 0;
         const minN = parseInt(app.getAttribute('data-min-stay'));
         
         if (n < minN) n = minN;
 
-        let up = baseRate;
-        let note = "STANDARD RATE (" + baseRate + "€/NIGHT)";
+        let r = rateBase;
+        let txt = "STANDARD RATE (" + rateBase + "€/NIGHT)";
 
-        // Production logic ports
-        if (n > 2 && n <= 6) { up = 20; note = "MID-TERM RATE (20€/NIGHT)"; }
-        else if (n > 6 && n <= 13) { up = 15; note = "WEEKLY RATE (15€/NIGHT)"; }
-        else if (n >= 14) { up = 10; note = "LONG-STAY RATE (10€/NIGHT)"; }
+        if (n > 2 && n <= 6) { r = 20; txt = "MID-TERM RATE (20€/NIGHT)"; }
+        else if (n > 6 && n <= 13) { r = 15; txt = "WEEKLY RATE (15€/NIGHT)"; }
+        else if (n >= 14) { r = 10; txt = "LONG-STAY RATE (10€/NIGHT)"; }
 
-        document.getElementById('p-m-final-sum').innerText = g * n * up;
-        document.getElementById('p-m-info').innerText = note;
+        document.getElementById('p-sum-ui').innerText = g * n * r;
+        document.getElementById('p-note-ui').innerText = txt;
     }
 
-    function proceedToMasterPay() {
-        const app = document.getElementById('p-master-app-root');
+    function pProceedToPay() {
+        const app = document.getElementById('p-master-standard-root');
         const url = app.getAttribute('data-checkout-url');
         const pid = app.getAttribute('data-product-id');
-        const sum = document.getElementById('p-m-final-sum').innerText;
+        const sum = document.getElementById('p-sum-ui').innerText;
         
         if (parseInt(sum) > 0) {
             const sep = url.includes('?') ? '&' : '?';
