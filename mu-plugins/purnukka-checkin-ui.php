@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (Sky High Version)
- * Description: Forced top alignment. All branding restored. Product ID 276.
+ * Plugin Name: Purnukka Check-in Master (Sky High + Cancel)
+ * Description: Forced top alignment, all branding, and Cancel button restored. Product ID 276.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -21,9 +21,9 @@ add_shortcode('purnukka_checkin', function($atts) {
         /* 1. PREMIUM HEADER - NOSTETTU */
         .purnukka-welcome-header {
             background: #ffffff;
-            padding: 20px 20px 10px 20px; /* Minimalistinen täyte */
+            padding: 20px 20px 10px 20px;
             text-align: center;
-            margin-top: -50px !important; /* Vetää headerin aivan ylös */
+            margin-top: -50px !important;
         }
 
         .p-brand-label {
@@ -45,11 +45,11 @@ add_shortcode('purnukka_checkin', function($atts) {
             font-weight: 400;
         }
 
-        /* 2. MASTER CONTAINER - NOSTETTU PYSTYPANKIN TASOLLE */
+        /* 2. MASTER CONTAINER - NOSTETTU */
         .purnukka-premium-wrapper {
             font-family: 'Montserrat', sans-serif;
             max-width: 850px;
-            margin: -20px auto 40px auto !important; /* Negatiivinen marginaali nostoon */
+            margin: -20px auto 40px auto !important;
             padding: 40px;
             background: #ffffff;
             text-align: center; 
@@ -124,6 +124,19 @@ add_shortcode('purnukka_checkin', function($atts) {
             cursor: pointer; font-size: 13px;
         }
 
+        .btn-cancel-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 11px;
+            cursor: pointer;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            transition: 0.3s;
+        }
+        .btn-cancel-link:hover { color: #1a2b28; }
+
         @media (max-width: 650px) {
             .p-input-row { grid-template-columns: 1fr; }
             .p-step-box { flex-direction: column; text-align: center; }
@@ -165,6 +178,7 @@ add_shortcode('purnukka_checkin', function($atts) {
             </div>
 
             <button class="btn-p-gold" onclick="proceedToPay()">Update and Pay</button>
+            <div class="btn-cancel-link" onclick="location.reload()">Cancel</div>
         </div>
     </div>
 
