@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Purnukka Check-in Master (Full-Space Lock)
- * Description: English, ID 276. Locked to fill 100% of available screen height.
+ * Plugin Name: Purnukka Check-in Master (Zero Scroll Fix)
+ * Description: Extremely low profile layout. Locked for 100% zoom. ID 276.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -9,136 +9,92 @@ if (!defined('ABSPATH')) exit;
 add_shortcode('purnukka_checkin', function($atts) {
     ob_start(); ?>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display&display=swap" rel="stylesheet">
-
     <style>
-        /* LUKITAAN KOKO SIVUN KORKEUS */
-        .p-locked-dashboard {
+        .p-master-zero-scroll {
             font-family: 'Montserrat', sans-serif;
-            max-width: 950px;
-            min-height: 85vh; /* Pakotetaan viemään lähes koko ruudun korkeus */
-            margin: -160px auto 0 auto !important;
-            padding: 60px 50px !important;
+            max-width: 850px;
+            /* PAKOTETTU NOSTO: Aloittaa aivan yläreunasta */
+            margin: -175px auto 0 auto !important; 
+            /* TIIVISTETTY SISÄLTÖ: Poistetaan turha ilma */
+            padding: 20px 40px 15px 40px !important;
             background: #ffffff;
             text-align: center; 
-            box-shadow: 0px 30px 60px rgba(0,0,0,0.1);
-            border-radius: 4px;
+            box-shadow: 0px 10px 40px rgba(0,0,0,0.06);
             border: 1px solid #f0f0f0;
             box-sizing: border-box;
             position: relative;
             z-index: 999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* Keskittää sisällön pystysuunnassa laatikon sisällä */
         }
 
-        .p-brand-gold { font-size: 11px; text-transform: uppercase; letter-spacing: 6px; color: #b89b5e; font-weight: bold; margin-bottom: 15px; display: block; }
-        .p-title-main { font-family: 'Playfair Display', serif; font-size: 42px; color: #1a2b28; margin: 0 0 30px 0; }
+        .p-brand-gold { font-size: 10px; text-transform: uppercase; letter-spacing: 5px; color: #b89b5e; font-weight: bold; display: block; margin-bottom: 2px; }
+        .p-title-main { font-family: 'Playfair Display', serif; font-size: 28px; color: #1a2b28; margin: 0 0 10px 0; line-height: 1; }
+        
+        .p-checkin-gold-divider { border-bottom: 2px solid #b89b5e; width: 40px; margin: 0 auto 15px auto; }
 
-        /* 2+1 ASettelu (Suuret laatikot kuten suomenkielisessä) */
-        .p-step-box-locked {
-            background: #fdfdfd;
-            border: 1px solid #1a2b28;
-            border-left: 8px solid #b89b5e; 
-            padding: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        #p-calc-locked-view { display: none; animation: fadeIn 0.4s ease-out; }
-
-        .p-grid-2-col {
+        /* 2+1 GRID: TIIVISTETTY KORKEUS */
+        .p-grid-inputs {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
-        .p-input-card {
+        .p-input-box-min {
             border: 1px solid #b89b5e;
-            padding: 20px;
+            padding: 8px 12px;
             text-align: left;
-            background: #fff;
         }
 
-        .p-input-card label { display: block; font-size: 10px; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 8px; }
-        .p-input-card input { border: none; width: 100%; font-size: 24px; font-weight: bold; color: #1a2b28; outline: none; background: transparent; }
+        .p-input-box-min label { display: block; font-size: 8px; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; }
+        .p-input-box-min input { border: none; width: 100%; font-size: 18px; font-weight: bold; color: #1a2b28; outline: none; background: transparent; padding: 0; }
 
-        .p-price-card-wide {
+        .p-price-box-min {
             background: #fdfdfd;
             border: 1px solid #1a2b28;
-            padding: 30px;
-            margin-bottom: 25px;
+            padding: 10px;
+            margin-bottom: 12px;
+            text-align: center;
         }
 
-        .p-price-val { font-size: 48px; font-weight: bold; color: #1a2b28; display: block; }
+        .p-price-val-min { font-size: 32px; font-weight: bold; color: #1a2b28; line-height: 1; display: block; }
 
-        .btn-pay-locked {
-            background: #b89b5e; color: #fff; border: none; padding: 25px;
+        .btn-pay-min {
+            background: #b89b5e; color: #fff; border: none; padding: 14px;
             width: 100%; font-weight: bold; text-transform: uppercase;
-            cursor: pointer; font-size: 14px; letter-spacing: 2px;
-            transition: 0.3s;
+            cursor: pointer; font-size: 12px; letter-spacing: 1px;
         }
 
-        .btn-pay-locked:hover { background: #1a2b28; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 800px) {
-            .p-locked-dashboard { margin-top: 0 !important; min-height: auto; }
-            .p-grid-2-col { grid-template-columns: 1fr; }
-            .p-step-box-locked { flex-direction: column; text-align: center; gap: 20px; }
-        }
+        @media (max-width: 600px) { .p-grid-inputs { grid-template-columns: 1fr; } .p-master-zero-scroll { margin-top: 0 !important; } }
     </style>
 
-    <div class="p-locked-dashboard">
+    <div class="p-master-zero-scroll">
         <span class="p-brand-gold">Purnukka Group</span>
         <h1 class="p-title-main">Welcome Home</h1>
+        <div class="p-checkin-gold-divider"></div>
 
-        <div style="border-bottom: 2px solid #b89b5e; width: 80px; margin: 0 auto 40px auto;"></div>
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 20px; color: #1a2b28; margin-bottom: 5px;">Check-in & Declaration</h2>
+        <p style="font-size: 11px; color: #666; margin-bottom: 15px;">Please verify your group size below.</p>
 
-        <h2 style="font-family: 'Playfair Display', serif; font-size: 28px; color: #1a2b28; margin-bottom: 15px;">Traveler Declaration & Check-in</h2>
-        
-        <div class="p-step-box-locked" id="p-step-1">
-            <div>
-                <strong style="font-size: 18px; color: #1a2b28;">Has your group size changed?</strong><br>
-                <span style="font-size: 13px; color: #666;">You can add and pay for additional guests here.</span>
+        <div class="p-grid-inputs">
+            <div class="p-input-box-min">
+                <label>Guests</label>
+                <input type="number" id="p-guests" value="1" min="1" oninput="recalc()">
             </div>
-            <button onclick="unlockCalc()" style="background:#1a2b28; color:#fff; border:none; padding:15px 25px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size:11px;">Add guests</button>
+            <div class="p-input-box-min">
+                <label>Nights</label>
+                <input type="number" id="p-nights" value="2" min="2" oninput="recalc()">
+            </div>
         </div>
 
-        <div id="p-calc-locked-view">
-            <div class="p-grid-2-col">
-                <div class="p-input-card">
-                    <label>Additional Guests</label>
-                    <input type="number" id="p-guests" value="1" min="1" oninput="recalc()">
-                </div>
-                <div class="p-input-card">
-                    <label>Nights of Stay</label>
-                    <input type="number" id="p-nights" value="2" min="2" oninput="recalc()">
-                </div>
-            </div>
-
-            <div class="p-price-card-wide">
-                <span style="font-size: 11px; color: #b89b5e; font-weight: bold; text-transform: uppercase;">Estimated Total</span>
-                <span class="p-price-val"><span id="p-sum">60</span> €</span>
-            </div>
-
-            <button class="btn-pay-locked" onclick="pay()">Update and Pay Now</button>
-            <div onclick="location.reload()" style="text-align: center; margin-top: 20px; font-size: 11px; cursor: pointer; color: #aaa; text-transform: uppercase; letter-spacing: 1px;">Cancel / Return</div>
+        <div class="p-price-box-min">
+            <span style="font-size: 8px; color: #b89b5e; font-weight: bold; display: block; margin-bottom: 2px;">TOTAL ESTIMATE</span>
+            <span class="p-price-val-min"><span id="p-sum">60</span> €</span>
         </div>
+
+        <button class="btn-pay-min" onclick="pay()">Update & Pay Now</button>
     </div>
 
     <script>
-    function unlockCalc() {
-        document.getElementById('p-step-1').style.display = 'none';
-        document.getElementById('p-calc-locked-view').style.display = 'block';
-        recalc();
-    }
     function recalc() {
         const g = parseInt(document.getElementById('p-guests').value) || 0;
         let n = parseInt(document.getElementById('p-nights').value) || 0;
