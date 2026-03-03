@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.29)
- * Description: Global SPoT: Dynamic Country Selector using WooCommerce database + Full 4-Color & SMTP Restore.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.30)
+ * Description: Global SPoT Sync: Complete WooCommerce Country List, 4-Color Branding, and Master SMTP.
  * Author: Purnukka Group Oy
- * Version: 0.29
+ * Version: 0.30
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -18,7 +18,6 @@ class PurnukkaStackCore {
         } else {
             add_action('template_redirect', [$this, 'purnukka_maintenance_mode']);
         }
-        $this->register_shortcodes();
     }
 
     public function customize_admin_footer() {
@@ -50,17 +49,14 @@ class PurnukkaStackCore {
         html,body{background:$dark!important;margin:0;padding:0;height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;overflow:hidden;}
         .c{text-align:center;animation:f 1.5s;padding:20px;} @keyframes f{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         img{max-height:120px;margin-bottom:30px} h1{color:$primary;font-size:3.5rem;margin:0;font-weight:700;} hr{border:0;height:1px;background:linear-gradient(to right,transparent,$primary,transparent);margin:25px auto;width:60%}
+        p{font-size:1.2rem;opacity:0.8;line-height:1.5;}
         </style></head><body><div class='c'>".($logo?"<img src='".esc_url($logo)."'>":"")."<h1>".esc_html($name)."</h1><hr><p>Opening soon!</p></div></body></html>";
         exit;
-    }
-
-    private function register_shortcodes() {
-        add_shortcode('p_villa_name', function() { return get_option('p_villa_name'); });
     }
 }
 
 /**
- * MASTER DEEP SYNC - SUPPORTS ALL COUNTRIES
+ * DEEP GLOBAL SYNC
  */
 function purnukka_sync_master_data() {
     // 1. SMTP Sync
@@ -73,13 +69,13 @@ function purnukka_sync_master_data() {
     $smtp['mail']['mailer'] = 'smtp';
     update_option('wp_mail_smtp', $smtp);
 
-    // 2. PDF Precision Sync
+    // 2. PDF Deep Sync with Global Country
     $pdf = get_option('wpo_wcpdf_settings_general', []);
     $country_code = get_option('p_legal_country', 'FI');
     
-    // Hae maan selkokielinen nimi WooCommercelta laskun tekstiblokkia varten
-    $countries = WC()->countries->get_countries();
-    $country_name = isset($countries[$country_code]) ? $countries[$country_code] : 'Finland';
+    // Get full country name from WC database for the text block
+    $wc_countries = WC()->countries->get_countries();
+    $country_full_name = isset($wc_countries[$country_code]) ? $wc_countries[$country_code] : 'Finland';
 
     $c_name = get_option('p_company_name');
     $c_addr = get_option('p_legal_address');
@@ -88,7 +84,7 @@ function purnukka_sync_master_data() {
     $c_phone = get_option('p_villa_phone');
     $c_id   = get_option('p_business_id');
 
-    // Sync individual fields
+    // Sync all PDF fields individually
     $pdf['shop_name'] = $c_name;
     $pdf['shop_address_line_1'] = $c_addr;
     $pdf['shop_city'] = $c_city;
@@ -97,14 +93,14 @@ function purnukka_sync_master_data() {
     $pdf['shop_country'] = $country_code;
     $pdf['shop_extra_1'] = "Business ID: " . $c_id;
 
-    // Force Object Sync for City/Zip/Country
+    // Force Object Mapping (The "default" array fix)
     $pdf['shop_address_city']     = array('default' => $c_city);
     $pdf['shop_address_postcode'] = array('default' => $c_zip);
     $pdf['shop_address_country']  = array('default' => $country_code);
     $pdf['shop_phone_number']     = array('default' => $c_phone);
     
-    // Complete text block
-    $pdf['shop_address'] = $c_name . "\n" . $c_addr . "\n" . $c_zip . " " . $c_city . "\n" . $country_name;
+    // Final Address Block
+    $pdf['shop_address'] = $c_name . "\n" . $c_addr . "\n" . $c_zip . " " . $c_city . "\n" . $country_full_name;
 
     update_option('wpo_wcpdf_settings_general', $pdf);
 }
@@ -113,17 +109,15 @@ function purnukka_sync_master_data() {
  * ADMIN UI
  */
 add_action('admin_menu', function() {
-    add_menu_page('Purnukka Settings', 'Purnukka Stack', 'manage_options', 'purnukka-settings', 'render_purnukka_settings_page', 'dashicons-admin-generic', 2);
+    add_menu_page('Purnukka Settings', 'Purnukka Stack', 'manage_options', 'pukka-settings', 'render_pukka_settings', 'dashicons-admin-generic', 2);
 });
 
-function render_purnukka_settings_page() {
+function render_pukka_settings() {
     if (isset($_GET['settings-updated'])) purnukka_sync_master_data();
-    
-    // Haetaan kaikki maailman maat WooCommercen listalta
     $wc_countries = WC()->countries->get_countries();
     ?>
     <div class="wrap">
-        <h1 style="color:#c5a059;">Purnukka Stack v0.29</h1>
+        <h1 style="color:#c5a059;">Purnukka Stack v0.30</h1>
         <hr>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
@@ -146,10 +140,10 @@ function render_purnukka_settings_page() {
             <h3>2. Communication & SMTP</h3>
             <table class="form-table">
                 <tr><th>Public Details</th><td>
-                    <input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" placeholder="Public Email">
+                    <input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" placeholder="Email">
                     <input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" placeholder="Phone">
                 </td></tr>
-                <tr><th>SMTP Config</th><td>
+                <tr><th>SMTP Master Config</th><td>
                     <input type="text" name="p_smtp_host" value="<?php echo esc_attr(get_option('p_smtp_host')); ?>" placeholder="Host">
                     <input type="text" name="p_smtp_user" value="<?php echo esc_attr(get_option('p_smtp_user')); ?>" placeholder="User">
                     <input type="password" name="p_smtp_pass" value="<?php echo esc_attr(get_option('p_smtp_pass')); ?>" placeholder="Pass">
@@ -160,7 +154,7 @@ function render_purnukka_settings_page() {
             <table class="form-table">
                 <tr><th>Company & VAT</th><td>
                     <input type="text" name="p_company_name" value="<?php echo esc_attr(get_option('p_company_name')); ?>" class="regular-text">
-                    <input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" placeholder="Business ID">
+                    <input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" placeholder="VAT ID">
                 </td></tr>
                 <tr><th>Street / Zip / City</th><td>
                     <input type="text" name="p_legal_address" value="<?php echo esc_attr(get_option('p_legal_address')); ?>" placeholder="Street">
