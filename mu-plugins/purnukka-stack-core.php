@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.223)
- * Description: Debugger Edition: Added SPoT Debugger to identify hidden PDF database keys.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.23)
+ * Description: The Final SPoT Fix: Targeting both simple and object-based PDF keys found via Debugger.
  * Author: Purnukka Group Oy
- * Version: 0.22
+ * Version: 0.23
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -55,15 +55,35 @@ class PurnukkaStackCore {
 }
 
 /**
- * MASTER SYNC
+ * MASTER DEEP SYNC - FINAL VERSION
  */
 function purnukka_sync_master_data() {
     $pdf = get_option('wpo_wcpdf_settings_general', []);
-    $pdf['shop_name'] = get_option('p_company_name');
-    $pdf['shop_address_line_1'] = get_option('p_legal_address');
-    $pdf['shop_city'] = get_option('p_legal_city');
-    $pdf['shop_postcode'] = get_option('p_legal_postcode');
-    $pdf['shop_phone'] = get_option('p_villa_phone');
+    
+    $c_name = get_option('p_company_name');
+    $c_addr = get_option('p_legal_address');
+    $c_zip  = get_option('p_legal_postcode');
+    $c_city = get_option('p_legal_city');
+    $c_phone = get_option('p_villa_phone');
+    $c_id   = get_option('p_business_id');
+
+    // 1. Päivitetään "Simple Keys"
+    $pdf['shop_name'] = $c_name;
+    $pdf['shop_address_line_1'] = $c_addr;
+    $pdf['shop_city'] = $c_city;
+    $pdf['shop_postcode'] = $c_zip;
+    $pdf['shop_phone'] = $c_phone;
+    $pdf['shop_extra_1'] = "Y-tunnus: " . $c_id;
+
+    // 2. Päivitetään "Object Keys" (Tämä korjaa {"default":""} ongelman)
+    $pdf['shop_address_city']     = array('default' => $c_city);
+    $pdf['shop_address_postcode'] = array('default' => $c_zip);
+    $pdf['shop_address_country']  = array('default' => 'FI');
+    $pdf['shop_phone_number']     = array('default' => $c_phone);
+    
+    // 3. Muodostetaan täysi osoitemöykky varmuuden vuoksi
+    $pdf['shop_address'] = $c_name . "\n" . $c_addr . "\n" . $c_zip . " " . $c_city;
+
     update_option('wpo_wcpdf_settings_general', $pdf);
 }
 
@@ -78,7 +98,7 @@ function render_purnukka_settings_page() {
     if (isset($_GET['settings-updated'])) purnukka_sync_master_data();
     ?>
     <div class="wrap">
-        <h1 style="color:#c5a059;">Purnukka Stack v0.22</h1>
+        <h1 style="color:#c5a059;">Purnukka Stack v0.23</h1>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
             <table class="form-table">
@@ -88,44 +108,25 @@ function render_purnukka_settings_page() {
                     <input type="color" name="purnukka_dark_color" value="<?php echo esc_attr(get_option('purnukka_dark_color', '#1a1a1a')); ?>"> Dark
                 </td></tr>
                 <tr><th>Company Name</th><td><input type="text" name="p_company_name" value="<?php echo esc_attr(get_option('p_company_name')); ?>" class="regular-text"></td></tr>
+                <tr><th>Phone & Business ID</th><td>
+                    <input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" placeholder="Phone">
+                    <input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" placeholder="VAT ID">
+                </td></tr>
                 <tr><th>Street Address</th><td><input type="text" name="p_legal_address" value="<?php echo esc_attr(get_option('p_legal_address')); ?>" class="regular-text"></td></tr>
                 <tr><th>Zip & City</th><td>
                     <input type="text" name="p_legal_postcode" value="<?php echo esc_attr(get_option('p_legal_postcode')); ?>" style="width:80px">
                     <input type="text" name="p_legal_city" value="<?php echo esc_attr(get_option('p_legal_city')); ?>" style="width:220px">
                 </td></tr>
-                <tr><th>Maintenance</th><td><input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable</td></tr>
+                <tr><th>Maintenance</th><td><input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable Curtain</td></tr>
             </table>
-            <?php submit_button('Save & Sync'); ?>
+            <?php submit_button('Save & Final Sync'); ?>
         </form>
-
-        <hr style="margin-top:50px;">
-        <div style="background:#f0f0f1; padding:20px; border:1px solid #ccc;">
-            <h3>🔍 SPoT Debugger – PDF Plugin State</h3>
-            <p>Tässä on PDF-lasku-pluginin tämänhetkiset arvot suoraan tietokannasta:</p>
-            <table class="widefat fixed" style="width:100%;">
-                <thead><tr><th>Avain (Key)</th><th>Arvo (Value)</th></tr></thead>
-                <tbody>
-                    <?php 
-                    $debug_pdf = get_option('wpo_wcpdf_settings_general', []);
-                    if (!empty($debug_pdf)) {
-                        foreach ($debug_pdf as $key => $val) {
-                            $display_val = is_array($val) ? json_encode($val) : $val;
-                            if (empty($display_val)) $display_val = '<span style="color:red;">[TYHJÄ]</span>';
-                            echo "<tr><td><strong>" . esc_html($key) . "</strong></td><td>" . esc_html($display_val) . "</td></tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='2'>Tietoja ei löytynyt. Asetuksia ei ole vielä tallennettu.</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
-        </div>
     </div>
     <?php
 }
 
 add_action('admin_init', function() {
-    $s = ['p_villa_name','purnukka_primary_color','purnukka_dark_color','p_company_name','p_legal_address','p_legal_postcode','p_legal_city','p_maintenance_mode'];
+    $s = ['p_villa_name','purnukka_primary_color','purnukka_dark_color','p_company_name','p_legal_address','p_legal_postcode','p_legal_city','p_villa_phone','p_business_id','p_maintenance_mode'];
     foreach($s as $o) register_setting('purnukka-settings-group', $o);
 });
 
