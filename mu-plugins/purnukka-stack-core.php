@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.11)
- * Description: Master Control Panel with Physical SMTP Sync & Admin Cleanup.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.12)
+ * Description: SPoT Master Control: Branding, SMTP, Legal, and PDF Invoice Sync.
  * Author: Purnukka Group Oy
- * Version: 0.11
+ * Version: 0.12
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -20,6 +20,7 @@ class PurnukkaStackCore {
             add_action('admin_head', [$this, 'admin_declutter_css']);
             add_action('admin_menu', [$this, 'remove_all_plugin_notices'], 999);
         }
+        $this->register_shortcodes();
     }
 
     public function customize_admin_footer() {
@@ -44,6 +45,15 @@ class PurnukkaStackCore {
         remove_all_actions('admin_notices');
         remove_all_actions('all_admin_notices');
     }
+
+    private function register_shortcodes() {
+        add_shortcode('p_villa_name', function() { return get_option('p_villa_name'); });
+        add_shortcode('p_company_name', function() { return get_option('p_company_name'); });
+        add_shortcode('p_business_id', function() { return get_option('p_business_id'); });
+        add_shortcode('p_address', function() { 
+            return get_option('p_legal_address') . ', ' . get_option('p_legal_postcode') . ' ' . get_option('p_legal_city'); 
+        });
+    }
 }
 
 /**
@@ -62,14 +72,13 @@ add_action('admin_menu', function() {
 });
 
 function render_purnukka_settings_page() {
-    // Force sync on page load if settings were just saved
     if (isset($_GET['settings-updated']) && $_GET['settings-updated']) {
-        purnukka_sync_smtp_to_plugin();
+        purnukka_sync_master_data();
     }
     ?>
     <div class="wrap">
         <h1 style="color: #c5a059; font-weight: bold;">Purnukka Stack – Configuration</h1>
-        <p>Global variables for branding, SMTP, and property details.</p>
+        <p>The <strong>Single Point of Truth</strong> for this property.</p>
         <hr>
         <form method="post" action="options.php" id="purnukka-settings-form">
             <?php settings_fields('purnukka-settings-group'); ?>
@@ -81,17 +90,12 @@ function render_purnukka_settings_page() {
                     <td><input type="text" name="p_villa_name" value="<?php echo esc_attr(get_option('p_villa_name', 'Villa Purnukka')); ?>" class="regular-text" /></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Master Villa Tagline</th>
-                    <td><input type="text" name="p_villa_tagline" value="<?php echo esc_attr(get_option('p_villa_tagline')); ?>" class="regular-text" /></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Colors (Primary / Hover / Accent / Dark)</th>
+                    <th scope="row">Colors (P / S / A / D)</th>
                     <td>
-                        <input type="color" id="color_primary" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>" />
-                        <input type="color" id="color_secondary" name="purnukka_secondary_color" value="<?php echo esc_attr(get_option('purnukka_secondary_color', '#a3844a')); ?>" />
-                        <input type="color" id="color_accent" name="purnukka_accent_color" value="<?php echo esc_attr(get_option('purnukka_accent_color', '#f1c40f')); ?>" />
-                        <input type="color" id="color_dark" name="purnukka_dark_color" value="<?php echo esc_attr(get_option('purnukka_dark_color', '#1a1a1a')); ?>" />
-                        <button type="button" id="reset-colors" class="button button-secondary" style="margin-left:10px;">Reset Colors</button>
+                        <input type="color" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>" />
+                        <input type="color" name="purnukka_secondary_color" value="<?php echo esc_attr(get_option('purnukka_secondary_color', '#a3844a')); ?>" />
+                        <input type="color" name="purnukka_accent_color" value="<?php echo esc_attr(get_option('purnukka_accent_color', '#f1c40f')); ?>" />
+                        <input type="color" name="purnukka_dark_color" value="<?php echo esc_attr(get_option('purnukka_dark_color', '#1a1a1a')); ?>" />
                     </td>
                 </tr>
                 <tr valign="top">
@@ -102,127 +106,89 @@ function render_purnukka_settings_page() {
 
             <h2>2. Communication & SMTP</h2>
             <table class="form-table">
+                <tr valign="top"><th scope="row">Public Email</th><td><input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" class="regular-text" /></td></tr>
+                <tr valign="top"><th scope="row">Contact Phone</th><td><input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" class="regular-text" /></td></tr>
                 <tr valign="top">
-                    <th scope="row">Customer Service Email</th>
-                    <td><input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" class="regular-text" /></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">SMTP Host & Port</th>
+                    <th scope="row">SMTP (Host/User/Pass)</th>
                     <td>
-                        <input type="text" name="p_smtp_host" value="<?php echo esc_attr(get_option('p_smtp_host')); ?>" placeholder="smtp.example.com" class="regular-text" style="width: 250px;" />
-                        <input type="number" name="p_smtp_port" value="<?php echo esc_attr(get_option('p_smtp_port', '587')); ?>" class="small-text" />
+                        <input type="text" name="p_smtp_host" value="<?php echo esc_attr(get_option('p_smtp_host')); ?>" placeholder="Host" style="width:140px;"/>
+                        <input type="text" name="p_smtp_user" value="<?php echo esc_attr(get_option('p_smtp_user')); ?>" placeholder="User" style="width:140px;"/>
+                        <input type="password" name="p_smtp_pass" value="<?php echo esc_attr(get_option('p_smtp_pass')); ?>" placeholder="Pass" style="width:140px;"/>
                     </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">SMTP Username</th>
-                    <td><input type="text" name="p_smtp_user" value="<?php echo esc_attr(get_option('p_smtp_user')); ?>" class="regular-text" /></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">SMTP Password</th>
-                    <td><input type="password" name="p_smtp_pass" value="<?php echo esc_attr(get_option('p_smtp_pass')); ?>" class="regular-text" /></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Contact Phone</th>
-                    <td><input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" class="regular-text" /></td>
                 </tr>
             </table>
 
-            <h2>3. Legal & Company Details</h2>
+            <h2>3. Legal & PDF Invoice Data (SPoT)</h2>
             <table class="form-table">
+                <tr valign="top"><th scope="row">Legal Company Name</th><td><input type="text" name="p_company_name" value="<?php echo esc_attr(get_option('p_company_name')); ?>" class="regular-text" /></td></tr>
+                <tr valign="top"><th scope="row">Business ID (Y-tunnus)</th><td><input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" class="regular-text" /></td></tr>
+                <tr valign="top"><th scope="row">Street Address</th><td><input type="text" name="p_legal_address" value="<?php echo esc_attr(get_option('p_legal_address')); ?>" class="regular-text" /></td></tr>
                 <tr valign="top">
-                    <th scope="row">Business ID</th>
-                    <td><input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" class="regular-text" /></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">VAT Rate (%)</th>
-                    <td><input type="number" name="p_vat_rate" value="<?php echo esc_attr(get_option('p_vat_rate', '10')); ?>" class="small-text" /> %</td>
+                    <th scope="row">Postcode & City</th>
+                    <td>
+                        <input type="text" name="p_legal_postcode" value="<?php echo esc_attr(get_option('p_legal_postcode')); ?>" placeholder="00100" style="width:80px;" />
+                        <input type="text" name="p_legal_city" value="<?php echo esc_attr(get_option('p_legal_city')); ?>" placeholder="City" style="width:315px;" />
+                    </td>
                 </tr>
             </table>
             
-            <?php submit_button('Save Purnukka Stack Settings'); ?>
+            <?php submit_button('Save & Sync Master Data'); ?>
         </form>
     </div>
-
-    <script>
-    document.getElementById('reset-colors').addEventListener('click', function() {
-        if (confirm('Reset branding colors to default?')) {
-            document.getElementById('color_primary').value = '#c5a059';
-            document.getElementById('color_secondary').value = '#a3844a';
-            document.getElementById('color_accent').value = '#f1c40f';
-            document.getElementById('color_dark').value = '#1a1a1a';
-        }
-    });
-    </script>
     <?php
 }
 
 add_action('admin_init', function() {
     $settings = [
-        'p_villa_name', 'p_villa_tagline', 'purnukka_primary_color', 'purnukka_secondary_color', 
-        'purnukka_accent_color', 'purnukka_dark_color', 'purnukka_logo_url',
-        'p_villa_email', 'p_villa_phone', 'p_business_id', 'p_vat_rate',
-        'p_smtp_host', 'p_smtp_port', 'p_smtp_user', 'p_smtp_pass'
+        'p_villa_name', 'purnukka_primary_color', 'purnukka_secondary_color', 'purnukka_accent_color', 'purnukka_dark_color', 'purnukka_logo_url',
+        'p_villa_email', 'p_villa_phone', 'p_smtp_host', 'p_smtp_user', 'p_smtp_pass', 'p_smtp_port',
+        'p_company_name', 'p_business_id', 'p_legal_address', 'p_legal_postcode', 'p_legal_city'
     ];
     foreach ($settings as $s) { register_setting('purnukka-settings-group', $s); }
 });
 
 /**
- * BRANDING INJECTION (CSS)
+ * MASTER DATA SYNC (SMTP & PDF INVOICE)
+ */
+function purnukka_sync_master_data() {
+    // 1. Sync SMTP
+    $smtp = get_option('wp_mail_smtp', []);
+    $smtp['mail']['from_email'] = get_option('p_villa_email');
+    $smtp['mail']['from_name']  = get_option('p_villa_name');
+    $smtp['smtp']['host']       = get_option('p_smtp_host');
+    $smtp['smtp']['user']       = get_option('p_smtp_user');
+    $smtp['smtp']['pass']       = get_option('p_smtp_pass');
+    $smtp['mail']['mailer']     = 'smtp';
+    update_option('wp_mail_smtp', $smtp);
+
+    // 2. Sync PDF Invoice Settings
+    $invoice_settings = get_option('wpo_wcpdf_settings_general', []);
+    $full_address = get_option('p_company_name') . "\n" . 
+                    get_option('p_legal_address') . "\n" . 
+                    get_option('p_legal_postcode') . " " . get_option('p_legal_city') . "\n" .
+                    "Business ID: " . get_option('p_business_id');
+    
+    $invoice_settings['shop_name']    = get_option('p_company_name');
+    $invoice_settings['shop_address'] = $full_address;
+    update_option('wpo_wcpdf_settings_general', $invoice_settings);
+}
+
+/**
+ * BRANDING & LOGO
  */
 add_action('wp_head', function() {
     if (is_admin()) return;
     $c1 = get_option('purnukka_primary_color', '#c5a059');
-    $c2 = get_option('purnukka_secondary_color', '#a3844a');
-    $c3 = get_option('purnukka_accent_color', '#f1c40f');
     $c4 = get_option('purnukka_dark_color', '#1a1a1a');
-    echo "<style>:root { --p-primary: $c1; --p-secondary: $c2; --p-accent: $c3; --p-dark: $c4; }
-    .button, button, .mphb-book-button { background-color: var(--p-primary) !important; border-color: var(--p-primary) !important; color: #fff !important; }
-    .button:hover, button:hover { background-color: var(--p-secondary) !important; }
-    a { color: var(--p-accent); } h1, h2, h3 { color: var(--p-dark) !important; }</style>";
+    echo "<style>:root { --p-primary: $c1; --p-dark: $c4; }
+    .button, button, .mphb-book-button { background-color: var(--p-primary) !important; color: #fff !important; }
+    h1, h2, h3 { color: var(--p-dark) !important; }</style>";
 }, 20);
 
-/**
- * SMTP SETTINGS SYNC
- */
-function purnukka_sync_smtp_to_plugin() {
-    $current_options = get_option('wp_mail_smtp', []);
-    
-    $current_options['mail']['from_email'] = get_option('p_villa_email');
-    $current_options['mail']['from_name']  = get_option('p_villa_name');
-    $current_options['mail']['mailer']     = 'smtp';
-    
-    $current_options['smtp']['host']       = get_option('p_smtp_host');
-    $current_options['smtp']['user']       = get_option('p_smtp_user');
-    $current_options['smtp']['pass']       = get_option('p_smtp_pass');
-    $current_options['smtp']['port']       = get_option('p_smtp_port', '587');
-    $current_options['smtp']['auth']       = true;
-    $current_options['smtp']['encryption'] = 'tls';
-    $current_options['smtp']['autotls']    = true;
-
-    update_option('wp_mail_smtp', $current_options);
-}
-
-// Triggers sync whenever SMTP options are updated
-add_action('update_option_p_smtp_host', 'purnukka_sync_smtp_to_plugin');
-add_action('update_option_p_smtp_user', 'purnukka_sync_smtp_to_plugin');
-add_action('update_option_p_smtp_pass', 'purnukka_sync_smtp_to_plugin');
-add_action('update_option_p_smtp_port', 'purnukka_sync_smtp_to_plugin');
-
-/**
- * LOGO & TEXT REPLACEMENT
- */
 add_filter('get_custom_logo', function($html) {
     $logo = get_option('purnukka_logo_url');
     if (!$logo) return $html;
     return sprintf('<a href="%s" class="custom-logo-link"><img src="%s" style="max-height:80px;"></a>', home_url('/'), esc_url($logo));
 });
-
-add_filter('the_content', 'purnukka_master_text_replacer');
-add_filter('the_title', 'purnukka_master_text_replacer');
-function purnukka_master_text_replacer($text) {
-    if (is_admin()) return $text;
-    $name = get_option('p_villa_name', 'Villa Purnukka');
-    return str_replace('Villa Purnukka', $name, $text);
-}
 
 new PurnukkaStackCore();
