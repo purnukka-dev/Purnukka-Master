@@ -182,19 +182,32 @@ add_action('wp_head', function() {
  * SMTP SETTINGS INJECTION
  * Forces WP Mail SMTP to use Purnukka Stack variables
  */
-add_filter('wp_mail_smtp_custom_options', function($options) {
-    $options['mail']['from_email'] = get_option('p_villa_email');
-    $options['mail']['from_name']  = get_option('p_villa_name');
-    $options['smtp']['host']       = get_option('p_smtp_host');
-    $options['smtp']['user']       = get_option('p_smtp_user');
-    $options['smtp']['pass']       = get_option('p_smtp_pass');
-    $options['smtp']['port']       = get_option('p_smtp_port', '587');
-    $options['smtp']['auth']       = true;
-    $options['smtp']['encryption'] = 'tls';
-    $options['mail']['mailer']     = 'smtp';
-    return $options;
-});
+/**
+ * SMTP SETTINGS SYNC (v0.11)
+ * This physically updates WP Mail SMTP settings when you save Purnukka settings.
+ */
+add_action('update_option_p_smtp_host', 'purnukka_sync_smtp_to_plugin');
+add_action('update_option_p_smtp_user', 'purnukka_sync_smtp_to_plugin');
+add_action('update_option_p_smtp_pass', 'purnukka_sync_smtp_to_plugin');
+add_action('update_option_p_smtp_port', 'purnukka_sync_smtp_to_plugin');
 
+function purnukka_sync_smtp_to_plugin() {
+    $current_options = get_option('wp_mail_smtp', []);
+    
+    $current_options['mail']['from_email'] = get_option('p_villa_email');
+    $current_options['mail']['from_name']  = get_option('p_villa_name');
+    $current_options['mail']['mailer']     = 'smtp';
+    
+    $current_options['smtp']['host']       = get_option('p_smtp_host');
+    $current_options['smtp']['user']       = get_option('p_smtp_user');
+    $current_options['smtp']['pass']       = get_option('p_smtp_pass');
+    $current_options['smtp']['port']       = get_option('p_smtp_port', '587');
+    $current_options['smtp']['auth']       = true;
+    $current_options['smtp']['encryption'] = 'tls';
+    $current_options['smtp']['autotls']    = true;
+
+    update_option('wp_mail_smtp', $current_options);
+}
 /**
  * LOGO & TEXT REPLACEMENT
  */
