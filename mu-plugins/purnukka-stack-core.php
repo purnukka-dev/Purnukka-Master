@@ -79,7 +79,7 @@ function render_purnukka_settings_page() {
                     <td><input type="color" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>" /></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Logo Image URL</th>
+                    <th scope="row">https://master.purnukka.com/wp-content/uploads/2026/03/logo.jpg</th>
                     <td>
                         <input type="text" name="purnukka_logo_url" value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" class="regular-text" />
                         <p class="description">Paste the URL of your transparent PNG logo here.</p>
