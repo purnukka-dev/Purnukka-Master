@@ -116,5 +116,40 @@ add_action('wp_head', function() {
     .button:hover, button:hover, .mphb-book-button:hover { background-color: var(--p-secondary) !important; border-color: var(--p-secondary) !important; }
     a { color: var(--p-accent); } h1, h2, h3 { color: var(--p-dark) !important; }</style>";
 }, 20);
+/**
+ * PHASE 11: ADMIN DE-CLUTTER (Anti-Ad & Notice Silencer)
+ * Hides annoying plugin ads and upgrade notices from the dashboard.
+ */
+add_action('admin_head', function() {
+    // Jos haluat silti nähdä kriittiset virheet, jätetään ne rauhaan,
+    // mutta piilotetaan yleiset "notice" ja "info" -laatikot.
+    echo '<style>
+        /* Piilotetaan yleiset ilmoituslaatikot paitsi meidän omissa säädöissä */
+        .toplevel_page_purnukka-settings .notice,
+        .toplevel_page_purnukka-settings .update-nag {
+            display: block !important;
+        }
+        
+        /* Piilotetaan muiden pluginien mainokset ja kehotukset kaikkialta */
+        .notice-info, 
+        .notice-warning:not(.error), 
+        .update-nag, 
+        #wp-admin-bar-wp-logo,
+        .wp-mail-smtp-review-notice,
+        .mphb-notice { 
+            display: none !important; 
+        }
+        
+        /* Erityisesti Bookliumin ja WP Mail SMTP:n "Upgrade" -kehotteet */
+        #footer-upgrade, .wp-mail-smtp-upgrade-bar, .mphb-upgrade-notice {
+            display: none !important;
+        }
+    </style>';
+});
 
+// Agreessiivisempi tapa poistaa ilmoitukset PHP:n kautta
+add_action('admin_menu', function() {
+    remove_all_actions('admin_notices');
+    remove_all_actions('all_admin_notices');
+}, 999);
 new PurnukkaStackCore();
