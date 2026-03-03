@@ -158,5 +158,42 @@ add_action('admin_init', function() {
     register_setting('purnukka-settings-group', 'purnukka_primary_color');
     register_setting('purnukka-settings-group', 'purnukka_logo_url');
 });
+/**
+ * PHASE 2: DYNAMIC BRANDING INJECTION
+ * Injects the stored brand settings into the site's frontend.
+ */
+
+// 1. Inject Dynamic CSS Variables into wp_head
+add_action('wp_head', function() {
+    // Prevent execution in admin dashboard
+    if ( is_admin() ) return;
+
+    // Fetch values from Phase 1 settings (with defaults)
+    $primary_color = get_option('purnukka_primary_color', '#c5a059');
+    $brand_name    = get_option('purnukka_brand_name', 'Villa Purnukka');
+
+    ?>
+    <style id="purnukka-dynamic-branding">
+        :root {
+            --purnukka-primary: <?php echo esc_attr($primary_color); ?>;
+            --purnukka-brand-name: "<?php echo esc_js($brand_name); ?>";
+        }
+
+        /* Automatically apply the primary color to main theme elements */
+        .button, 
+        button, 
+        .mphb-book-button, 
+        .mphb-view-details-button,
+        .cmplz-btn.cmplz-accept {
+            background-color: var(--purnukka-primary) !important;
+            border-color: var(--purnukka-primary) !important;
+        }
+
+        a, .site-title a {
+            color: var(--purnukka-primary);
+        }
+    </style>
+    <?php
+}, 20);
 new PurnukkaStackCore();
 // Updated deployment for the new tier structure - 2026-02-28
