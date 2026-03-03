@@ -83,28 +83,32 @@ class PurnukkaStackCore {
     }
 }
 /**
- * VAIHE 1: LUODAAN PURNUKKA STACK -OHJAUSPANEELI
+ * PHASE 1: MASTER CONTROL PANEL
+ * Creates a centralized settings page for branding and configuration.
+ * All UI labels, variables, and logic are in English.
  */
 
-// 1. Rekisteröidään valikko hallintapaneelin vasempaan laitaan
+// 1. Register the Purnukka Stack menu in the WordPress sidebar
 add_action('admin_menu', function() {
     add_menu_page(
-        'Purnukka Settings',    // Sivun otsikko
-        'Purnukka Stack',       // Valikon nimi
-        'manage_options',       // Vain admineille
-        'purnukka-settings',    // Slug
-        'render_purnukka_settings_page', // Funktio joka piirtää sivun
-        'dashicons-admin-generic', // Ikoni
-        2                       // Sijainti listan kärjessä
+        'Purnukka Settings',          // Browser tab title
+        'Purnukka Stack',             // Sidebar menu label
+        'manage_options',             // Access level (Admins only)
+        'purnukka-settings',          // Unique URL slug
+        'render_purnukka_settings_page', // UI render function
+        'dashicons-admin-generic',    // Cog icon
+        2                             // Top-level position
     );
 });
 
-// 2. Piirretään asetussivun sisältö
+// 2. Render the Settings Page Content
 function render_purnukka_settings_page() {
     ?>
     <div class="wrap">
-        <h1 style="color: #c5a059;">Purnukka Stack – Master Control Panel</h1>
+        <h1 style="color: #c5a059; font-weight: bold;">Purnukka Stack – Master Control Panel</h1>
+        <p>Global configuration for branding, colors, and API integrations.</p>
         <hr>
+        
         <form method="post" action="options.php">
             <?php 
                 settings_fields('purnukka-settings-group'); 
@@ -113,35 +117,46 @@ function render_purnukka_settings_page() {
             
             <table class="form-table">
                 <tr valign="top">
-                    <th scope="row">Asiakkaan nimi (Brändi)</th>
+                    <th scope="row" style="width: 200px;">Property Brand Name</th>
                     <td>
                         <input type="text" name="purnukka_brand_name" 
                                value="<?php echo esc_attr(get_option('purnukka_brand_name', 'Villa Purnukka')); ?>" 
                                class="regular-text" />
-                        <p class="description">Millä nimellä tämä kohde tunnetaan? (esim. "Mökkikylä Onni")</p>
+                        <p class="description">Global name used in emails and frontend texts.</p>
                     </td>
                 </tr>
                 
                 <tr valign="top">
-                    <th scope="row">Pääväri (Brändiväri)</th>
+                    <th scope="row">Primary Brand Color</th>
                     <td>
                         <input type="color" name="purnukka_primary_color" 
                                value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>" />
-                        <p class="description">Tämä väri päivittää napit, korostukset ja GDPR-bannerit automaattisesti.</p>
+                        <p class="description">Main accent color for buttons, icons, and UI elements.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Logo Image URL</th>
+                    <td>
+                        <input type="text" name="purnukka_logo_url" 
+                               value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" 
+                               class="regular-text" />
+                        <p class="description">Direct link to the PNG/SVG logo file.</p>
                     </td>
                 </tr>
             </table>
             
-            <?php submit_button('Tallenna Purnukka-asetukset'); ?>
+            <?php submit_button('Update Purnukka Stack'); ?>
         </form>
     </div>
     <?php
 }
 
-// 3. Sallitaan tietojen tallennus tietokantaan
+// 3. Initialize and whitelist settings in the database
 add_action('admin_init', function() {
     register_setting('purnukka-settings-group', 'purnukka_brand_name');
     register_setting('purnukka-settings-group', 'purnukka_primary_color');
+    register_setting('purnukka-settings-group', 'purnukka_logo_url');
 });
 new PurnukkaStackCore();
 // Updated deployment for the new tier structure - 2026-02-28
