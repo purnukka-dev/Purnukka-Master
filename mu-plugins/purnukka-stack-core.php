@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.30)
+ * Plugin Name: Purnukka Stack - Core Branding (v0.31)
  * Description: Global SPoT Sync: Complete WooCommerce Country List, 4-Color Branding, and Master SMTP.
  * Author: Purnukka Group Oy
  * Version: 0.30
