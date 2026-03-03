@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.32)
+ * Plugin Name: Purnukka Stack - Core Branding (v0.321)
  * Description: The Complete SPoT: Global Countries, 4-Colors, SMTP, and Contact Details in PDF.
  * Author: Purnukka Group Oy
  * Version: 0.32
