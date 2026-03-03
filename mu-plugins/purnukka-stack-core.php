@@ -188,6 +188,26 @@ add_action('wp_head', function() {
     </style>
     <?php
 }, 20);
+/**
+ * PHASE 5: GLOBAL BRANDING REPLACER
+ * This automatically swaps "Villa Purnukka" with your "Master Villa Name" globally.
+ */
+add_filter('the_content', 'purnukka_master_text_replacer');
+add_filter('the_title', 'purnukka_master_text_replacer');
 
+function purnukka_master_text_replacer($text) {
+    if ( is_admin() ) return $text;
+
+    $new_name = get_option('p_villa_name', 'Villa Purnukka');
+    $new_tagline = get_option('p_villa_tagline');
+
+    // Replace Name
+    if ( $new_name !== 'Villa Purnukka' ) {
+        $text = str_replace('Villa Purnukka', $new_name, $text);
+    }
+    
+    // You can also add more replacements here for Phone, Email etc.
+    return $text;
+}
 // Initialize the Core
 new PurnukkaStackCore();
