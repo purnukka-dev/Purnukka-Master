@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.18)
- * Description: Restoration & Deep SPoT Fix: 4-Color System, Individual PDF Field Sync, and Full-Screen Curtain.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.19)
+ * Description: Precision SPoT Sync: Mapping every individual PDF field to eliminate MASTER- placeholders.
  * Author: Purnukka Group Oy
- * Version: 0.18
+ * Version: 0.19
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -59,7 +59,7 @@ class PurnukkaStackCore {
 }
 
 /**
- * DEEP SYNC ENGINE - TARGETING INDIVIDUAL FIELDS
+ * PRECISION SYNC - MAPPING INDIVIDUAL DATABASE KEYS
  */
 function purnukka_sync_master_data() {
     // 1. SMTP Sync
@@ -72,27 +72,28 @@ function purnukka_sync_master_data() {
     $smtp['mail']['mailer'] = 'smtp';
     update_option('wp_mail_smtp', $smtp);
 
-    // 2. PDF Invoice Deep Sync (Populating Individual Settings Fields)
-    $pdf_gen = get_option('wpo_wcpdf_settings_general', []);
+    // 2. PDF Invoice Precision Sync (Targeting all keys identified in image_638d80.png)
+    $pdf_settings = get_option('wpo_wcpdf_settings_general', []);
     
-    // Core Mapping
-    $pdf_gen['shop_name']     = get_option('p_company_name');
-    $pdf_gen['shop_address']  = get_option('p_legal_address') . "\n" . get_option('p_legal_postcode') . " " . get_option('p_legal_city');
+    // Sync individual fields to overwrite placeholders
+    $pdf_settings['shop_name']           = get_option('p_company_name');
+    $pdf_settings['shop_address_line_1'] = get_option('p_legal_address');
+    $pdf_settings['shop_city']           = get_option('p_legal_city');
+    $pdf_settings['shop_postcode']       = get_option('p_legal_postcode');
+    $pdf_settings['shop_phone']          = get_option('p_villa_phone');
     
-    // Mapping Individual Lines to avoid MASTER- placeholders
-    $pdf_gen['shop_address_line_1'] = get_option('p_legal_address');
-    $pdf_gen['shop_city']           = get_option('p_legal_city');
-    $pdf_gen['shop_postcode']       = get_option('p_legal_postcode');
-    $pdf_gen['shop_phone']          = get_option('p_villa_phone');
-    
-    // Mapping Custom Fields (Y-tunnus)
-    $pdf_gen['shop_extra_1'] = "Business ID: " . get_option('p_business_id');
+    // Extra Info field for Business ID / Y-tunnus
+    $pdf_settings['shop_extra_1']        = "Y-tunnus: " . get_option('p_business_id');
 
-    update_option('wpo_wcpdf_settings_general', $pdf_gen);
+    // Compile full address block as well for themes that use it
+    $pdf_settings['shop_address'] = get_option('p_legal_address') . "\n" . 
+                                    get_option('p_legal_postcode') . " " . get_option('p_legal_city');
+
+    update_option('wpo_wcpdf_settings_general', $pdf_settings);
 }
 
 /**
- * ADMIN UI - RESTORED FULL PANEL
+ * RESTORED PANEL INTERFACE
  */
 add_action('admin_menu', function() {
     add_menu_page('Purnukka Settings', 'Purnukka Stack', 'manage_options', 'purnukka-settings', 'render_purnukka_settings_page', 'dashicons-admin-generic', 2);
@@ -102,7 +103,7 @@ function render_purnukka_settings_page() {
     if (isset($_GET['settings-updated'])) purnukka_sync_master_data();
     ?>
     <div class="wrap">
-        <h1 style="color:#c5a059;">Purnukka Stack v0.18</h1>
+        <h1 style="color:#c5a059;">Purnukka Stack v0.19</h1>
         <hr>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
@@ -125,7 +126,7 @@ function render_purnukka_settings_page() {
             <h3>2. Communication & SMTP</h3>
             <table class="form-table">
                 <tr><th>Public Email</th><td><input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" class="regular-text"></td></tr>
-                <tr><th>SMTP Host / User / Pass</th><td>
+                <tr><th>SMTP Setup</th><td>
                     <input type="text" name="p_smtp_host" value="<?php echo esc_attr(get_option('p_smtp_host')); ?>" placeholder="Host" style="width:140px">
                     <input type="text" name="p_smtp_user" value="<?php echo esc_attr(get_option('p_smtp_user')); ?>" placeholder="User" style="width:140px">
                     <input type="password" name="p_smtp_pass" value="<?php echo esc_attr(get_option('p_smtp_pass')); ?>" placeholder="Password" style="width:140px">
@@ -151,7 +152,7 @@ function render_purnukka_settings_page() {
                     <input type="text" name="p_longitude" value="<?php echo esc_attr(get_option('p_longitude')); ?>" placeholder="Long" style="width:150px">
                 </td></tr>
                 <tr><th>Maintenance Mode</th><td>
-                    <input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable Curtain
+                    <input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable Curtain Mode
                 </td></tr>
             </table>
             
