@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.321)
- * Description: The Complete SPoT: Global Countries, 4-Colors, SMTP, and Contact Details in PDF.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.33)
+ * Description: The Final Master Piece: Global Countries, 4-Colors, SMTP, and Deep Contact Sync for PDF.
  * Author: Purnukka Group Oy
- * Version: 0.32
+ * Version: 0.33
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -66,7 +66,7 @@ function purnukka_sync_master_data() {
     $smtp['mail']['mailer'] = 'smtp';
     update_option('wp_mail_smtp', $smtp);
 
-    // 2. PDF Deep Sync
+    // 2. PDF Deep Precision Sync
     $pdf = get_option('wpo_wcpdf_settings_general', []);
     $country_code = get_option('p_legal_country', 'FI');
     $wc_countries = WC()->countries->get_countries();
@@ -77,26 +77,25 @@ function purnukka_sync_master_data() {
     $c_phone = get_option('p_villa_phone');
     $c_id = get_option('p_business_id');
 
-    // Individual keys
+    // Individual keys for PDF
     $pdf['shop_name'] = $c_name;
     $pdf['shop_address_line_1'] = get_option('p_legal_address');
     $pdf['shop_city'] = get_option('p_legal_city');
     $pdf['shop_postcode'] = get_option('p_legal_postcode');
     $pdf['shop_country'] = $country_code;
-    
-    // Add Email and Phone specifically to PDF settings
     $pdf['shop_phone'] = $c_phone;
     $pdf['shop_email_address'] = $c_email;
     $pdf['shop_extra_1'] = "Business ID: " . $c_id;
 
-    // Object mapping for PDF internal structure
+    // Object mapping for PDF internal structure (Fixing {"default":""} issues)
     $pdf['shop_address_city']     = array('default' => get_option('p_legal_city'));
     $pdf['shop_address_postcode'] = array('default' => get_option('p_legal_postcode'));
     $pdf['shop_address_country']  = array('default' => $country_code);
     $pdf['shop_phone_number']     = array('default' => $c_phone);
     $pdf['shop_email_address_obj'] = array('default' => $c_email);
 
-    // Footer Info
+    // Final compiled address and footer
+    $pdf['shop_address'] = $c_name . "\n" . get_option('p_legal_address') . "\n" . get_option('p_legal_postcode') . " " . get_option('p_legal_city') . "\n" . $country_full_name;
     $pdf['footer'] = $c_name . " | " . $c_email . " | " . $c_phone . " | Business ID: " . $c_id;
 
     update_option('wpo_wcpdf_settings_general', $pdf);
@@ -111,7 +110,7 @@ function render_pukka_settings() {
     $wc_countries = WC()->countries->get_countries();
     ?>
     <div class="wrap">
-        <h1 style="color:#c5a059;">Purnukka Stack v0.32</h1>
+        <h1 style="color:#c5a059;">Purnukka Stack v0.33</h1>
         <hr>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
@@ -133,7 +132,7 @@ function render_pukka_settings() {
 
             <h3>2. Communication & SMTP Master</h3>
             <table class="form-table">
-                <tr><th>Contact Info</th><td>
+                <tr><th>Contact Details</th><td>
                     <input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" placeholder="Public Email">
                     <input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" placeholder="Phone Number">
                 </td></tr>
@@ -144,7 +143,7 @@ function render_pukka_settings() {
                 </td></tr>
             </table>
 
-            <h3>3. Legal & Country SPoT</h3>
+            <h3>3. Legal & World Country SPoT</h3>
             <table class="form-table">
                 <tr><th>Company & VAT</th><td>
                     <input type="text" name="p_company_name" value="<?php echo esc_attr(get_option('p_company_name')); ?>" class="regular-text">
@@ -169,7 +168,7 @@ function render_pukka_settings() {
                 <tr><th>Curtain Mode</th><td><input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable Curtain</td></tr>
             </table>
             
-            <?php submit_button('Save & Sync Master Data'); ?>
+            <?php submit_button('Save & Sync Global Master Data'); ?>
         </form>
     </div>
     <?php
