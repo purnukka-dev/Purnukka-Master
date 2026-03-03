@@ -19,7 +19,6 @@ class PurnukkaStackCore {
         } else {
             add_action('template_redirect', [$this, 'purnukka_maintenance_mode']);
         }
-        $this->register_shortcodes();
     }
 
     public function customize_admin_footer() {
@@ -57,13 +56,6 @@ class PurnukkaStackCore {
         </style></head><body><div class='c'>".($logo?"<img src='".esc_url($logo)."'>":"")."<h1>".esc_html($name)."</h1><hr><p>Our site is currently under construction.<br>We will be opening soon!</p></div></body></html>";
         exit;
     }
-
-    private function register_shortcodes() {
-        add_shortcode('p_villa_name', function() { return get_option('p_villa_name'); });
-        add_shortcode('p_address', function() { 
-            return get_option('p_legal_address') . ', ' . get_option('p_legal_postcode') . ' ' . get_option('p_legal_city'); 
-        });
-    }
 }
 
 /**
@@ -80,10 +72,9 @@ function purnukka_sync_master_data() {
     $smtp['mail']['mailer'] = 'smtp';
     update_option('wp_mail_smtp', $smtp);
 
-    // 2. PDF Invoice Deep Sync (Fixes MASTER-COMPANY placeholders)
+    // 2. PDF Invoice Deep Sync (Trying to overwrite both general and extra fields)
     $pdf = get_option('wpo_wcpdf_settings_general', []);
-    $full_addr = get_option('p_company_name') . "\n" . 
-                 get_option('p_legal_address') . "\n" . 
+    $full_addr = get_option('p_legal_address') . "\n" . 
                  get_option('p_legal_postcode') . " " . get_option('p_legal_city') . "\n" . 
                  "Phone: " . get_option('p_villa_phone') . "\n" .
                  "Business ID: " . get_option('p_business_id');
@@ -91,6 +82,10 @@ function purnukka_sync_master_data() {
     $pdf['shop_name'] = get_option('p_company_name');
     $pdf['shop_address'] = $full_addr;
     update_option('wpo_wcpdf_settings_general', $pdf);
+    
+    // Backup: Update individual options if plugin is older version
+    update_option('wpo_wcpdf_shop_name', get_option('p_company_name'));
+    update_option('wpo_wcpdf_shop_address', $full_addr);
 }
 
 /**
@@ -168,7 +163,7 @@ add_action('admin_init', function() {
     foreach($s as $o) register_setting('purnukka-settings-group', $o);
 });
 
-// Branding CSS
+// Branding CSS Injection
 add_action('wp_head', function() {
     if (is_admin()) return;
     $c1 = get_option('purnukka_primary_color', '#c5a059');
