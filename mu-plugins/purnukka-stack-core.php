@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.39)
+ * Plugin Name: Purnukka Stack - Core Branding (v0.391)
  * Description: The Final Polished SPoT: Auto-Logo Sync, 4-Colors, Global Countries, and Master SMTP.
  * Author: Purnukka Group Oy
  * Version: 0.39
