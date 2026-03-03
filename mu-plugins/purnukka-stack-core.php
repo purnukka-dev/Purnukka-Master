@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.15)
- * Description: Deep SPoT Sync: Physical override for PDF Invoices, SMTP, and Full-Screen Dark Curtain.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.16)
+ * Description: Restoration Version: All buttons and fields returned. Deep SPoT Sync for SMTP, PDF, and Maps.
  * Author: Purnukka Group Oy
- * Version: 0.15
+ * Version: 0.16
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -19,6 +19,7 @@ class PurnukkaStackCore {
         } else {
             add_action('template_redirect', [$this, 'purnukka_maintenance_mode']);
         }
+        $this->register_shortcodes();
     }
 
     public function customize_admin_footer() {
@@ -48,17 +49,25 @@ class PurnukkaStackCore {
         $dark = get_option('purnukka_dark_color', '#1a1a1a');
 
         header('HTTP/1.1 503 Service Temporarily Unavailable');
-        echo "<!DOCTYPE html><html style='background:$dark;'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>$name</title><style>
+        echo "<!DOCTYPE html><html style='background:$dark;margin:0;padding:0;overflow:hidden;'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>$name</title><style>
         html,body{background:$dark!important;margin:0;padding:0;height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;overflow:hidden;}
-        .c{text-align:center;animation:f 1.5s;} @keyframes f{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:0}}
-        img{max-height:100px;margin-bottom:20px} h1{color:$primary;font-size:3rem;margin:0} hr{border:0;height:1px;background:linear-gradient(to right,transparent,$primary,transparent);margin:20px auto;width:60%}
-        </style></head><body><div class='c'>".($logo?"<img src='$logo'>":"")."<h1>$name</h1><hr><p>Currently under construction.<br>Opening soon!</p></div></body></html>";
+        .c{text-align:center;animation:f 1.5s;padding:20px;} @keyframes f{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        img{max-height:120px;margin-bottom:30px} h1{color:$primary;font-size:3.5rem;margin:0;font-weight:700;} hr{border:0;height:1px;background:linear-gradient(to right,transparent,$primary,transparent);margin:25px auto;width:60%}
+        p{font-size:1.2rem;opacity:0.8;line-height:1.5;}
+        </style></head><body><div class='c'>".($logo?"<img src='".esc_url($logo)."'>":"")."<h1>".esc_html($name)."</h1><hr><p>Our site is currently under construction.<br>We will be opening soon!</p></div></body></html>";
         exit;
+    }
+
+    private function register_shortcodes() {
+        add_shortcode('p_villa_name', function() { return get_option('p_villa_name'); });
+        add_shortcode('p_address', function() { 
+            return get_option('p_legal_address') . ', ' . get_option('p_legal_postcode') . ' ' . get_option('p_legal_city'); 
+        });
     }
 }
 
 /**
- * MASTER SYNC ENGINE
+ * DEEP SYNC ENGINE
  */
 function purnukka_sync_master_data() {
     // 1. SMTP Sync
@@ -68,24 +77,15 @@ function purnukka_sync_master_data() {
     $smtp['smtp']['host'] = get_option('p_smtp_host');
     $smtp['smtp']['user'] = get_option('p_smtp_user');
     $smtp['smtp']['pass'] = get_option('p_smtp_pass');
+    $smtp['mail']['mailer'] = 'smtp';
     update_option('wp_mail_smtp', $smtp);
 
-    // 2. DEEP PDF INVOICE SYNC (Ylikirjoittaa jokaisen kentän erikseen)
-    $pdf_gen = get_option('wpo_wcpdf_settings_general', []);
-    
-    // Nämä ovat ne kentät, jotka laskussa yleensä kummittelevat
-    $pdf_gen['shop_name']    = get_option('p_company_name');
-    $pdf_gen['shop_address'] = get_option('p_legal_address') . "\n" . get_option('p_legal_postcode') . " " . get_option('p_legal_city');
-    
-    // Pakotetaan myös erilliset "Extra" kentät jos template käyttää niitä
-    $pdf_gen['footer'] = get_option('p_company_name') . " | Business ID: " . get_option('p_business_id');
-    
-    // Tallennetaan pääasetukset
-    update_option('wpo_wcpdf_settings_general', $pdf_gen);
-    
-    // Jos plugin käyttää "Address" tai "Footer" -kohtaan omia muuttujiaan
-    update_option('wpo_wcpdf_shop_name', get_option('p_company_name'));
-    update_option('wpo_wcpdf_shop_address', $pdf_gen['shop_address'] . "\n" . get_option('p_villa_phone'));
+    // 2. PDF Invoice Deep Sync
+    $pdf = get_option('wpo_wcpdf_settings_general', []);
+    $addr = get_option('p_company_name') . "\n" . get_option('p_legal_address') . "\n" . get_option('p_legal_postcode') . " " . get_option('p_legal_city') . "\n" . "Y-tunnus: " . get_option('p_business_id');
+    $pdf['shop_name'] = get_option('p_company_name');
+    $pdf['shop_address'] = $addr;
+    update_option('wpo_wcpdf_settings_general', $pdf);
 }
 
 /**
@@ -99,39 +99,74 @@ function render_purnukka_settings_page() {
     if (isset($_GET['settings-updated'])) purnukka_sync_master_data();
     ?>
     <div class="wrap">
-        <h1>Purnukka Stack v0.15</h1>
+        <h1 style="color:#c5a059;">Purnukka Stack v0.16 (Restoration)</h1>
+        <hr>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
+            
+            <h3>1. Branding & Identity</h3>
             <table class="form-table">
-                <tr><th>Villa Name</th><td><input type="text" name="p_villa_name" value="<?php echo esc_attr(get_option('p_villa_name')); ?>" class="regular-text"></td></tr>
+                <tr><th>Villa Name & Tagline</th><td>
+                    <input type="text" name="p_villa_name" value="<?php echo esc_attr(get_option('p_villa_name')); ?>" placeholder="Villa Name" class="regular-text">
+                    <input type="text" name="p_villa_tagline" value="<?php echo esc_attr(get_option('p_villa_tagline')); ?>" placeholder="Tagline" class="regular-text">
+                </td></tr>
                 <tr><th>Logo & Colors</th><td>
                     <input type="text" name="purnukka_logo_url" value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" placeholder="Logo URL" class="regular-text"><br><br>
-                    <input type="color" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>">
-                    <input type="color" name="purnukka_dark_color" value="<?php echo esc_attr(get_option('purnukka_dark_color', '#1a1a1a')); ?>">
-                </td></tr>
-                <tr><th>Company Name</th><td><input type="text" name="p_company_name" value="<?php echo esc_attr(get_option('p_company_name')); ?>" class="regular-text"></td></tr>
-                <tr><th>Street Address</th><td><input type="text" name="p_legal_address" value="<?php echo esc_attr(get_option('p_legal_address')); ?>" class="regular-text"></td></tr>
-                <tr><th>Zip & City</th><td>
-                    <input type="text" name="p_legal_postcode" value="<?php echo esc_attr(get_option('p_legal_postcode')); ?>" style="width:70px">
-                    <input type="text" name="p_legal_city" value="<?php echo esc_attr(get_option('p_legal_city')); ?>" style="width:220px">
-                </td></tr>
-                <tr><th>Phone & Business ID</th><td>
-                    <input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" placeholder="Phone">
-                    <input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" placeholder="Y-tunnus">
-                </td></tr>
-                <tr><th>Maintenance Mode</th><td>
-                    <input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable Curtain
+                    <input type="color" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>"> Primary
+                    <input type="color" name="purnukka_dark_color" value="<?php echo esc_attr(get_option('purnukka_dark_color', '#1a1a1a')); ?>"> Dark
                 </td></tr>
             </table>
-            <?php submit_button('Save & Deep Sync'); ?>
+
+            <h3>2. Communication & SMTP</h3>
+            <table class="form-table">
+                <tr><th>Public Email</th><td><input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" class="regular-text"></td></tr>
+                <tr><th>SMTP Host / User / Pass</th><td>
+                    <input type="text" name="p_smtp_host" value="<?php echo esc_attr(get_option('p_smtp_host')); ?>" placeholder="Host" style="width:180px">
+                    <input type="text" name="p_smtp_user" value="<?php echo esc_attr(get_option('p_smtp_user')); ?>" placeholder="User" style="width:180px">
+                    <input type="password" name="p_smtp_pass" value="<?php echo esc_attr(get_option('p_smtp_pass')); ?>" placeholder="Password" style="width:180px">
+                </td></tr>
+                <tr><th>Phone Number</th><td><input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" class="regular-text"></td></tr>
+            </table>
+
+            <h3>3. Legal & PDF SPoT</h3>
+            <table class="form-table">
+                <tr><th>Company Name</th><td><input type="text" name="p_company_name" value="<?php echo esc_attr(get_option('p_company_name')); ?>" class="regular-text"></td></tr>
+                <tr><th>Business ID (Y-tunnus)</th><td><input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" class="regular-text"></td></tr>
+                <tr><th>Street Address</th><td><input type="text" name="p_legal_address" value="<?php echo esc_attr(get_option('p_legal_address')); ?>" class="regular-text"></td></tr>
+                <tr><th>Zip & City</th><td>
+                    <input type="text" name="p_legal_postcode" value="<?php echo esc_attr(get_option('p_legal_postcode')); ?>" style="width:80px">
+                    <input type="text" name="p_legal_city" value="<?php echo esc_attr(get_option('p_legal_city')); ?>" style="width:220px">
+                </td></tr>
+            </table>
+
+            <h3>4. Maps & Maintenance</h3>
+            <table class="form-table">
+                <tr><th>Lat / Long Coordinates</th><td>
+                    <input type="text" name="p_latitude" value="<?php echo esc_attr(get_option('p_latitude')); ?>" placeholder="Latitude" style="width:150px">
+                    <input type="text" name="p_longitude" value="<?php echo esc_attr(get_option('p_longitude')); ?>" placeholder="Longitude" style="width:150px">
+                </td></tr>
+                <tr><th>Curtain Mode</th><td>
+                    <input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> **Enable Maintenance Mode** (Hides site from visitors)
+                </td></tr>
+            </table>
+            
+            <?php submit_button('Save & Sync All Master Data'); ?>
         </form>
     </div>
     <?php
 }
 
 add_action('admin_init', function() {
-    $s = ['p_villa_name','purnukka_logo_url','purnukka_primary_color','purnukka_dark_color','p_company_name','p_legal_address','p_legal_postcode','p_legal_city','p_villa_phone','p_business_id','p_maintenance_mode','p_villa_email','p_smtp_host','p_smtp_user','p_smtp_pass'];
+    $s = ['p_villa_name','p_villa_tagline','purnukka_logo_url','purnukka_primary_color','purnukka_dark_color','p_villa_email','p_smtp_host','p_smtp_user','p_smtp_pass','p_villa_phone','p_company_name','p_business_id','p_legal_address','p_legal_postcode','p_legal_city','p_latitude','p_longitude','p_maintenance_mode'];
     foreach($s as $o) register_setting('purnukka-settings-group', $o);
 });
+
+// Text Replacer
+add_filter('the_content', 'p_text_swap');
+add_filter('the_title', 'p_text_swap');
+function p_text_swap($t) {
+    if (is_admin()) return $t;
+    return str_replace('Villa Purnukka', get_option('p_villa_name', 'Villa Purnukka'), $t);
+}
 
 new PurnukkaStackCore();
