@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.35)
- * Description: Ultimate Scalability: Automatic Logo Sideloading (URL to ID), Global Countries, 4-Colors, and SMTP.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.36)
+ * Description: Master Logo Force: Forcing logo ID into PDF settings with visual status feedback.
  * Author: Purnukka Group Oy
- * Version: 0.35
+ * Version: 0.36
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -56,59 +56,39 @@ class PurnukkaStackCore {
 }
 
 /**
- * AUTO-SIDELOAD SYNC ENGINE
+ * MASTER OVERRIDE ENGINE
  */
 function purnukka_sync_master_data() {
-    // 1. SMTP Sync
-    $smtp = get_option('wp_mail_smtp', []);
-    $smtp['mail']['from_email'] = get_option('p_villa_email');
-    $smtp['mail']['from_name']  = get_option('p_villa_name');
-    $smtp['smtp']['host'] = get_option('p_smtp_host');
-    $smtp['smtp']['user'] = get_option('p_smtp_user');
-    $smtp['smtp']['pass'] = get_option('p_smtp_pass');
-    $smtp['mail']['mailer'] = 'smtp';
-    update_option('wp_mail_smtp', $smtp);
-
-    // 2. PDF Deep Sync with Auto-Sideloading
     $pdf = get_option('wpo_wcpdf_settings_general', []);
     $logo_url = get_option('purnukka_logo_url');
     
-    // Etsitään ID tai ladataan se mediakirjastoon
+    // 1. Etsitään ID
     $logo_id = attachment_url_to_postid($logo_url);
     
+    // 2. Jos ei löydy, yritetään hakea tietokannasta nimen perusteella
     if (!$logo_id && !empty($logo_url)) {
-        require_once(ABSPATH . 'wp-admin/includes/media.php');
-        require_once(ABSPATH . 'wp-admin/includes/file.php');
-        require_once(ABSPATH . 'wp-admin/includes/image.php');
-        $logo_id = media_sideload_image($logo_url, 0, null, 'id');
+        global $wpdb;
+        $file_name = basename($logo_url);
+        $logo_id = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM $wpdb->postmeta WHERE meta_value LIKE %s LIMIT 1", '%/' . $file_name));
     }
 
-    if (!is_wp_error($logo_id) && $logo_id) {
+    // 3. PAKOTETAAN LOGO (Kokeillaan kaikkia tunnettuja avaimia)
+    if ($logo_id) {
         $pdf['header_logo'] = $logo_id;
+        update_option('purnukka_last_logo_id', $logo_id); // Tallennetaan muistiin
     }
 
-    $c_name = get_option('p_company_name');
+    // 4. Osoitetiedot (Debugger Fix)
     $c_country = get_option('p_legal_country', 'FI');
-    $wc_countries = WC()->countries->get_countries();
-    $country_name = isset($wc_countries[$c_country]) ? $wc_countries[$c_country] : 'Finland';
-
-    $pdf['shop_name'] = $c_name;
+    $pdf['shop_name'] = get_option('p_company_name');
     $pdf['shop_address_line_1'] = get_option('p_legal_address');
     $pdf['shop_city'] = get_option('p_legal_city');
     $pdf['shop_postcode'] = get_option('p_legal_postcode');
     $pdf['shop_country'] = $c_country;
     $pdf['shop_phone'] = get_option('p_villa_phone');
-    $pdf['shop_extra_1'] = "Business ID: " . get_option('p_business_id');
-
-    // Object Sync (Debugger Fix)
-    $pdf['shop_address_city']     = array('default' => get_option('p_legal_city'));
-    $pdf['shop_address_postcode'] = array('default' => get_option('p_legal_postcode'));
-    $pdf['shop_address_country']  = array('default' => $c_country);
-    
-    $pdf['shop_address'] = $c_name . "\n" . get_option('p_legal_address') . "\n" . get_option('p_legal_postcode') . " " . get_option('p_legal_city') . "\n" . $country_name;
-    $pdf['footer'] = $c_name . " | " . get_option('p_villa_email') . " | " . get_option('p_villa_phone');
 
     update_option('wpo_wcpdf_settings_general', $pdf);
+    return $logo_id;
 }
 
 /**
@@ -119,39 +99,34 @@ add_action('admin_menu', function() {
 });
 
 function render_pukka_settings() {
-    if (isset($_GET['settings-updated'])) purnukka_sync_master_data();
+    $status_msg = "";
+    if (isset($_GET['settings-updated'])) {
+        $id = purnukka_sync_master_data();
+        if ($id) {
+            $status_msg = '<div class="notice notice-success is-dismissible"><p>✅ Logo löydetty (ID: '.$id.') ja kytketty PDF-laskuun!</p></div>';
+        } else {
+            $status_msg = '<div class="notice notice-error is-dismissible"><p>❌ Logo-URL ei vastaa mitään kuvaa mediakirjastossa. Lataa logo ensin Media-kirjastoon.</p></div>';
+        }
+    }
+    
     $wc_countries = WC()->countries->get_countries();
     ?>
     <div class="wrap">
-        <h1>Purnukka Stack v0.35</h1>
+        <h1>Purnukka Stack v0.36</h1>
+        <?php echo $status_msg; ?>
         <hr>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
-            <h3>1. Branding (Auto-Sync Logo)</h3>
             <table class="form-table">
                 <tr><th>Villa Name</th><td><input type="text" name="p_villa_name" value="<?php echo esc_attr(get_option('p_villa_name')); ?>" class="regular-text"></td></tr>
-                <tr><th>Logo Master URL</th><td><input type="text" name="purnukka_logo_url" value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" class="regular-text"><br><em>*Koodi lataa kuvan automaattisesti mediakirjastoon, jos se puuttuu.</em></td></tr>
-                <tr><th>Colors</th><td>
-                    <input type="color" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>"> Primary
-                    <input type="color" name="purnukka_dark_color" value="<?php echo esc_attr(get_option('purnukka_dark_color', '#1a1a1a')); ?>"> Dark
+                <tr><th>Logo URL</th><td>
+                    <input type="text" name="purnukka_logo_url" value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" class="regular-text">
+                    <p class="description">Varmista, että tämä on kopioitu suoraan <strong>Media -> Library</strong> -kohdasta.</p>
                 </td></tr>
-            </table>
-            <h3>2. Communication & Legal</h3>
-            <table class="form-table">
-                <tr><th>Email / Phone</th><td>
-                    <input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>">
-                    <input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>">
-                </td></tr>
-                <tr><th>Company Name / VAT</th><td>
-                    <input type="text" name="p_company_name" value="<?php echo esc_attr(get_option('p_company_name')); ?>" class="regular-text">
-                    <input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>">
-                </td></tr>
-                <tr><th>Street / Zip / City</th><td>
-                    <input type="text" name="p_legal_address" value="<?php echo esc_attr(get_option('p_legal_address')); ?>">
-                    <input type="text" name="p_legal_postcode" value="<?php echo esc_attr(get_option('p_legal_postcode')); ?>" style="width:80px">
-                    <input type="text" name="p_legal_city" value="<?php echo esc_attr(get_option('p_legal_city')); ?>" style="width:160px">
-                </td></tr>
-                <tr><th>Country</th><td>
+                <tr><th>Brändiväri</th><td><input type="color" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>"> Primary</td></tr>
+                <tr><th>Y-tunnus</th><td><input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>"></td></tr>
+                <tr><th>Kaupunki & Maa</th><td>
+                    <input type="text" name="p_legal_city" value="<?php echo esc_attr(get_option('p_legal_city')); ?>" placeholder="Kaupunki">
                     <select name="p_legal_country">
                         <?php foreach($wc_countries as $code => $name): ?>
                             <option value="<?php echo $code; ?>" <?php selected(get_option('p_legal_country', 'FI'), $code); ?>><?php echo $name; ?></option>
@@ -159,14 +134,14 @@ function render_pukka_settings() {
                     </select>
                 </td></tr>
             </table>
-            <?php submit_button('Save & Force Global Sync'); ?>
+            <?php submit_button('Save & Force Sync'); ?>
         </form>
     </div>
     <?php
 }
 
 add_action('admin_init', function() {
-    $s = ['p_villa_name','purnukka_logo_url','purnukka_primary_color','purnukka_dark_color','p_villa_email','p_smtp_host','p_smtp_user','p_smtp_pass','p_villa_phone','p_company_name','p_business_id','p_legal_address','p_legal_postcode','p_legal_city','p_legal_country','p_maintenance_mode'];
+    $s = ['p_villa_name','purnukka_logo_url','purnukka_primary_color','p_business_id','p_legal_city','p_legal_country','p_legal_address','p_legal_postcode','p_villa_phone','p_company_name'];
     foreach($s as $o) register_setting('purnukka-settings-group', $o);
 });
 
