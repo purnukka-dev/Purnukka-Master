@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.23)
- * Description: The Final SPoT Fix: Targeting both simple and object-based PDF keys found via Debugger.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.24)
+ * Description: SPoT Object Override: Forcing City and Postcode into the plugin's internal "default" arrays.
  * Author: Purnukka Group Oy
- * Version: 0.23
+ * Version: 0.24
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -55,40 +55,40 @@ class PurnukkaStackCore {
 }
 
 /**
- * MASTER DEEP SYNC - FINAL VERSION
+ * OBJECT-BASED MASTER SYNC
  */
 function purnukka_sync_master_data() {
     $pdf = get_option('wpo_wcpdf_settings_general', []);
     
-    $c_name = get_option('p_company_name');
-    $c_addr = get_option('p_legal_address');
-    $c_zip  = get_option('p_legal_postcode');
-    $c_city = get_option('p_legal_city');
+    $c_name  = get_option('p_company_name');
+    $c_addr  = get_option('p_legal_address');
+    $c_zip   = get_option('p_legal_postcode');
+    $c_city  = get_option('p_legal_city');
     $c_phone = get_option('p_villa_phone');
-    $c_id   = get_option('p_business_id');
+    $c_id    = get_option('p_business_id');
 
-    // 1. Päivitetään "Simple Keys"
-    $pdf['shop_name'] = $c_name;
+    // 1. Päivitetään suorat tekstikentät
+    $pdf['shop_name']           = $c_name;
     $pdf['shop_address_line_1'] = $c_addr;
-    $pdf['shop_city'] = $c_city;
-    $pdf['shop_postcode'] = $c_zip;
-    $pdf['shop_phone'] = $c_phone;
-    $pdf['shop_extra_1'] = "Y-tunnus: " . $c_id;
+    $pdf['shop_city']           = $c_city;
+    $pdf['shop_postcode']       = $c_zip;
+    $pdf['shop_phone']          = $c_phone;
+    $pdf['shop_extra_1']        = "Y-tunnus: " . $c_id;
 
-    // 2. Päivitetään "Object Keys" (Tämä korjaa {"default":""} ongelman)
+    // 2. Päivitetään objektit (Nämä olivat tyhjiä Debuggerissa)
     $pdf['shop_address_city']     = array('default' => $c_city);
     $pdf['shop_address_postcode'] = array('default' => $c_zip);
-    $pdf['shop_address_country']  = array('default' => 'FI');
     $pdf['shop_phone_number']     = array('default' => $c_phone);
+    $pdf['shop_address_country']  = array('default' => 'Finland');
     
-    // 3. Muodostetaan täysi osoitemöykky varmuuden vuoksi
+    // 3. Täysi osoite yhtenä merkkijonona
     $pdf['shop_address'] = $c_name . "\n" . $c_addr . "\n" . $c_zip . " " . $c_city;
 
     update_option('wpo_wcpdf_settings_general', $pdf);
 }
 
 /**
- * ADMIN UI
+ * UI & SAVING
  */
 add_action('admin_menu', function() {
     add_menu_page('Purnukka Settings', 'Purnukka Stack', 'manage_options', 'purnukka-settings', 'render_purnukka_settings_page', 'dashicons-admin-generic', 2);
@@ -98,7 +98,7 @@ function render_purnukka_settings_page() {
     if (isset($_GET['settings-updated'])) purnukka_sync_master_data();
     ?>
     <div class="wrap">
-        <h1 style="color:#c5a059;">Purnukka Stack v0.23</h1>
+        <h1 style="color:#c5a059;">Purnukka Stack v0.24</h1>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
             <table class="form-table">
@@ -119,7 +119,7 @@ function render_purnukka_settings_page() {
                 </td></tr>
                 <tr><th>Maintenance</th><td><input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable Curtain</td></tr>
             </table>
-            <?php submit_button('Save & Final Sync'); ?>
+            <?php submit_button('Save & Force Sync Objects'); ?>
         </form>
     </div>
     <?php
