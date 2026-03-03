@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.4)
- * Description: Handles white-labeling, admin footer, and dynamic CSS branding based on the English context.json.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.5)
+ * Description: Handles white-labeling, admin footer, and dynamic CSS branding based on the English context.json. Includes theme-specific bug fixes for Booklium.
  * Author: Purnukka Group Oy
- * Version: 0.4
+ * Version: 0.5
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -23,6 +23,9 @@ class PurnukkaStackCore {
         // Front-end and Editor branding
         add_action('wp_head', [$this, 'inject_dynamic_branding'], 10);
         add_action('enqueue_block_editor_assets', [$this, 'inject_editor_branding']);
+
+        // Fixes for Booklium theme updater notice
+        add_filter('site_transient_update_themes', [$this, 'fix_booklium_updater_bug'], 20);
     }
 
     private function load_context() {
@@ -31,6 +34,16 @@ class PurnukkaStackCore {
             $json = file_get_contents( $config_path );
             $this->context = json_decode( $json, true );
         }
+    }
+
+    /**
+     * Fixes "Undefined property: stdClass::$new_version" in Booklium theme
+     */
+    public function fix_booklium_updater_bug($value) {
+        if (isset($value) && is_object($value) && isset($value->response['booklium'])) {
+            unset($value->response['booklium']);
+        }
+        return $value;
     }
 
     /**
@@ -84,4 +97,4 @@ class PurnukkaStackCore {
 }
 
 new PurnukkaStackCore();
-// Updated deployment for the new tier structure - 2026-02-28
+// Updated deployment for the new tier structure - 2026-03-03
