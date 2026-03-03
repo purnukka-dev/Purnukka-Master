@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.5)
- * Description: Handles white-labeling, admin footer, and dynamic CSS branding based on the English context.json. Includes theme-specific bug fixes for Booklium.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.4)
+ * Description: Handles white-labeling, admin footer, and dynamic CSS branding based on the English context.json.
  * Author: Purnukka Group Oy
- * Version: 0.5
+ * Version: 0.4
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -23,9 +23,6 @@ class PurnukkaStackCore {
         // Front-end and Editor branding
         add_action('wp_head', [$this, 'inject_dynamic_branding'], 10);
         add_action('enqueue_block_editor_assets', [$this, 'inject_editor_branding']);
-
-        // Fixes for Booklium theme updater notice
-        add_filter('site_transient_update_themes', [$this, 'fix_booklium_updater_bug'], 20);
     }
 
     private function load_context() {
@@ -34,16 +31,6 @@ class PurnukkaStackCore {
             $json = file_get_contents( $config_path );
             $this->context = json_decode( $json, true );
         }
-    }
-
-    /**
-     * Fixes "Undefined property: stdClass::$new_version" in Booklium theme
-     */
-    public function fix_booklium_updater_bug($value) {
-        if (isset($value) && is_object($value) && isset($value->response['booklium'])) {
-            unset($value->response['booklium']);
-        }
-        return $value;
     }
 
     /**
@@ -95,6 +82,66 @@ class PurnukkaStackCore {
         $wp_admin_bar->remove_menu('wp-logo');
     }
 }
+/**
+ * VAIHE 1: LUODAAN PURNUKKA STACK -OHJAUSPANEELI
+ */
 
+// 1. Rekisteröidään valikko hallintapaneelin vasempaan laitaan
+add_action('admin_menu', function() {
+    add_menu_page(
+        'Purnukka Settings',    // Sivun otsikko
+        'Purnukka Stack',       // Valikon nimi
+        'manage_options',       // Vain admineille
+        'purnukka-settings',    // Slug
+        'render_purnukka_settings_page', // Funktio joka piirtää sivun
+        'dashicons-admin-generic', // Ikoni
+        2                       // Sijainti listan kärjessä
+    );
+});
+
+// 2. Piirretään asetussivun sisältö
+function render_purnukka_settings_page() {
+    ?>
+    <div class="wrap">
+        <h1 style="color: #c5a059;">Purnukka Stack – Master Control Panel</h1>
+        <hr>
+        <form method="post" action="options.php">
+            <?php 
+                settings_fields('purnukka-settings-group'); 
+                do_settings_sections('purnukka-settings-group'); 
+            ?>
+            
+            <table class="form-table">
+                <tr valign="top">
+                    <th scope="row">Asiakkaan nimi (Brändi)</th>
+                    <td>
+                        <input type="text" name="purnukka_brand_name" 
+                               value="<?php echo esc_attr(get_option('purnukka_brand_name', 'Villa Purnukka')); ?>" 
+                               class="regular-text" />
+                        <p class="description">Millä nimellä tämä kohde tunnetaan? (esim. "Mökkikylä Onni")</p>
+                    </td>
+                </tr>
+                
+                <tr valign="top">
+                    <th scope="row">Pääväri (Brändiväri)</th>
+                    <td>
+                        <input type="color" name="purnukka_primary_color" 
+                               value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>" />
+                        <p class="description">Tämä väri päivittää napit, korostukset ja GDPR-bannerit automaattisesti.</p>
+                    </td>
+                </tr>
+            </table>
+            
+            <?php submit_button('Tallenna Purnukka-asetukset'); ?>
+        </form>
+    </div>
+    <?php
+}
+
+// 3. Sallitaan tietojen tallennus tietokantaan
+add_action('admin_init', function() {
+    register_setting('purnukka-settings-group', 'purnukka_brand_name');
+    register_setting('purnukka-settings-group', 'purnukka_primary_color');
+});
 new PurnukkaStackCore();
-// Updated deployment for the new tier structure - 2026-03-03
+// Updated deployment for the new tier structure - 2026-02-28
