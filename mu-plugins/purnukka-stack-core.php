@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.26)
+ * Plugin Name: Purnukka Stack - Core Branding (v0.261)
  * Description: SPoT Expansion: Added Country Selector with Deep Sync to PDF and Identity.
  * Author: Purnukka Group Oy
  * Version: 0.26
