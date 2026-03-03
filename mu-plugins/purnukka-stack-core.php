@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.5)
+ * Plugin Name: Purnukka Stack - Core Branding (v0.6)
  * Description: Master Control Panel for property branding, legal details, and dynamic injection.
  * Author: Purnukka Group Oy
- * Version: 0.5
+ * Version: 0.6
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -37,11 +37,9 @@ class PurnukkaStackCore {
 }
 
 /**
- * PHASE 4: EXPANDED MASTER CONTROL PANEL
- * Centralized database for all property and company specific data.
+ * PHASE 4: MASTER CONTROL PANEL UI
  */
 
-// 1. Register the Purnukka Stack menu in the WordPress sidebar
 add_action('admin_menu', function() {
     add_menu_page(
         'Purnukka Settings',
@@ -54,7 +52,6 @@ add_action('admin_menu', function() {
     );
 });
 
-// 2. Render the Settings Page UI
 function render_purnukka_settings_page() {
     ?>
     <div class="wrap">
@@ -83,7 +80,10 @@ function render_purnukka_settings_page() {
                 </tr>
                 <tr valign="top">
                     <th scope="row">Logo Image URL</th>
-                    <td><input type="text" name="purnukka_logo_url" value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" class="regular-text" /></td>
+                    <td>
+                        <input type="text" name="purnukka_logo_url" value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" class="regular-text" />
+                        <p class="description">Paste the URL of your transparent PNG logo here.</p>
+                    </td>
                 </tr>
             </table>
 
@@ -152,7 +152,6 @@ function render_purnukka_settings_page() {
     <?php
 }
 
-// 3. Initialize and whitelist settings in the database
 add_action('admin_init', function() {
     $purnukka_settings = [
         'p_villa_name', 'p_villa_tagline', 'purnukka_primary_color', 'purnukka_logo_url',
@@ -170,44 +169,48 @@ add_action('admin_init', function() {
  */
 add_action('wp_head', function() {
     if ( is_admin() ) return;
-
     $primary_color = get_option('purnukka_primary_color', '#c5a059');
-
     ?>
     <style id="purnukka-dynamic-branding">
-        :root {
-            --purnukka-primary: <?php echo esc_attr($primary_color); ?>;
-        }
+        :root { --purnukka-primary: <?php echo esc_attr($primary_color); ?>; }
         .button, button, .mphb-book-button, .mphb-view-details-button, .cmplz-btn.cmplz-accept {
             background-color: var(--purnukka-primary) !important;
             border-color: var(--purnukka-primary) !important;
         }
-        a, .site-title a {
-            color: var(--purnukka-primary);
-        }
+        a, .site-title a { color: var(--purnukka-primary); }
     </style>
     <?php
 }, 20);
+
+/**
+ * PHASE 4.1: DYNAMIC LOGO REPLACEMENT
+ */
+add_filter('get_custom_logo', function($html) {
+    $master_logo = get_option('purnukka_logo_url');
+    if ( !empty($master_logo) ) {
+        $html = sprintf(
+            '<a href="%1$s" class="custom-logo-link" rel="home"><img src="%2$s" class="custom-logo" alt="Logo" style="max-height: 80px; width: auto; display: block;"></a>',
+            esc_url( home_url( '/' ) ),
+            esc_url( $master_logo )
+        );
+    }
+    return $html;
+});
+
 /**
  * PHASE 5: GLOBAL BRANDING REPLACER
- * This automatically swaps "Villa Purnukka" with your "Master Villa Name" globally.
  */
 add_filter('the_content', 'purnukka_master_text_replacer');
 add_filter('the_title', 'purnukka_master_text_replacer');
 
 function purnukka_master_text_replacer($text) {
     if ( is_admin() ) return $text;
-
     $new_name = get_option('p_villa_name', 'Villa Purnukka');
-    $new_tagline = get_option('p_villa_tagline');
-
-    // Replace Name
     if ( $new_name !== 'Villa Purnukka' ) {
         $text = str_replace('Villa Purnukka', $new_name, $text);
     }
-    
-    // You can also add more replacements here for Phone, Email etc.
     return $text;
 }
+
 // Initialize the Core
 new PurnukkaStackCore();
