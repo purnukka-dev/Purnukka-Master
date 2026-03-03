@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.6)
+ * Plugin Name: Purnukka Stack - Core Branding (v0.7)
  * Description: Master Control Panel for property branding, legal details, and dynamic injection.
  * Author: Purnukka Group Oy
- * Version: 0.6
+ * Version: 0.7
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -77,6 +77,18 @@ function render_purnukka_settings_page() {
                 <tr valign="top">
                     <th scope="row">Primary Brand Color</th>
                     <td><input type="color" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>" /></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Secondary Color (Hover)</th>
+                    <td><input type="color" name="purnukka_secondary_color" value="<?php echo esc_attr(get_option('purnukka_secondary_color', '#a3844a')); ?>" /></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Accent Color</th>
+                    <td><input type="color" name="purnukka_accent_color" value="<?php echo esc_attr(get_option('purnukka_accent_color', '#f1c40f')); ?>" /></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Dark / Heading Color</th>
+                    <td><input type="color" name="purnukka_dark_color" value="<?php echo esc_attr(get_option('purnukka_dark_color', '#1a1a1a')); ?>" /></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row">Logo Image URL</th>
@@ -154,10 +166,11 @@ function render_purnukka_settings_page() {
 
 add_action('admin_init', function() {
     $purnukka_settings = [
-        'p_villa_name', 'p_villa_tagline', 'purnukka_primary_color', 'purnukka_logo_url',
-        'p_villa_email', 'p_villa_phone', 'p_villa_slug', 'p_location_slug',
-        'p_company_name', 'p_business_id', 'p_company_address', 'p_vat_rate',
-        'p_latitude', 'p_longitude', 'p_map_address'
+        'p_villa_name', 'p_villa_tagline', 'purnukka_primary_color', 
+        'purnukka_secondary_color', 'purnukka_accent_color', 'purnukka_dark_color',
+        'purnukka_logo_url', 'p_villa_email', 'p_villa_phone', 'p_villa_slug', 
+        'p_location_slug', 'p_company_name', 'p_business_id', 'p_company_address', 
+        'p_vat_rate', 'p_latitude', 'p_longitude', 'p_map_address'
     ];
     foreach ($purnukka_settings as $setting) {
         register_setting('purnukka-settings-group', $setting);
@@ -169,15 +182,36 @@ add_action('admin_init', function() {
  */
 add_action('wp_head', function() {
     if ( is_admin() ) return;
-    $primary_color = get_option('purnukka_primary_color', '#c5a059');
+    $c1 = get_option('purnukka_primary_color', '#c5a059');
+    $c2 = get_option('purnukka_secondary_color', '#a3844a');
+    $c3 = get_option('purnukka_accent_color', '#f1c40f');
+    $c4 = get_option('purnukka_dark_color', '#1a1a1a');
     ?>
     <style id="purnukka-dynamic-branding">
-        :root { --purnukka-primary: <?php echo esc_attr($primary_color); ?>; }
-        .button, button, .mphb-book-button, .mphb-view-details-button, .cmplz-btn.cmplz-accept {
-            background-color: var(--purnukka-primary) !important;
-            border-color: var(--purnukka-primary) !important;
+        :root { 
+            --p-primary: <?php echo esc_attr($c1); ?>; 
+            --p-secondary: <?php echo esc_attr($c2); ?>;
+            --p-accent: <?php echo esc_attr($c3); ?>;
+            --p-dark: <?php echo esc_attr($c4); ?>;
         }
-        a, .site-title a { color: var(--purnukka-primary); }
+        
+        /* Primary Color: Buttons and Icons */
+        .button, button, .mphb-book-button, .mphb-view-details-button, .cmplz-btn.cmplz-accept {
+            background-color: var(--p-primary) !important;
+            border-color: var(--p-primary) !important;
+        }
+        
+        /* Secondary Color: Hover states */
+        .button:hover, button:hover, .mphb-book-button:hover {
+            background-color: var(--p-secondary) !important;
+            border-color: var(--p-secondary) !important;
+        }
+
+        /* Accent Color: Prices and highlights */
+        .mphb-price .mphb-price-period, a { color: var(--p-accent); }
+
+        /* Dark Color: Headings and Site Title */
+        h1, h2, h3, .site-title a { color: var(--p-dark) !important; }
     </style>
     <?php
 }, 20);
