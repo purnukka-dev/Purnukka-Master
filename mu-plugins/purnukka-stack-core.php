@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.22)
+ * Plugin Name: Purnukka Stack - Core Branding (v0.223)
  * Description: Debugger Edition: Added SPoT Debugger to identify hidden PDF database keys.
  * Author: Purnukka Group Oy
  * Version: 0.22
