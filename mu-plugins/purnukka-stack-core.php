@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.20)
- * Description: Precision Mapping: Force syncing every individual address field to the PDF generator.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.21)
+ * Description: Ultimate SPoT Sync: Targeting every possible database key for PDF Invoices & Packing Slips.
  * Author: Purnukka Group Oy
- * Version: 0.20
+ * Version: 0.21
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -56,7 +56,7 @@ class PurnukkaStackCore {
 }
 
 /**
- * DEEP PRECISION SYNC
+ * MASTER DEEP SYNC
  */
 function purnukka_sync_master_data() {
     // 1. SMTP Sync
@@ -69,24 +69,37 @@ function purnukka_sync_master_data() {
     $smtp['mail']['mailer'] = 'smtp';
     update_option('wp_mail_smtp', $smtp);
 
-    // 2. PDF PRECISION SYNC (Targeting Individual Keys from image_638d80)
+    // 2. PDF DEEP SYNC
     $pdf = get_option('wpo_wcpdf_settings_general', []);
     
-    // Mapping each field individually
-    $pdf['shop_name']           = get_option('p_company_name');
-    $pdf['shop_address_line_1'] = get_option('p_legal_address');
-    $pdf['shop_city']           = get_option('p_legal_city');
-    $pdf['shop_postcode']       = get_option('p_legal_postcode');
-    $pdf['shop_phone']          = get_option('p_villa_phone');
+    // Syötetään tiedot muuttujiin
+    $c_name = get_option('p_company_name');
+    $c_addr = get_option('p_legal_address');
+    $c_zip  = get_option('p_legal_postcode');
+    $c_city = get_option('p_legal_city');
+    $c_id   = get_option('p_business_id');
+    $c_phone = get_option('p_villa_phone');
+
+    // A. Pakotetaan serialized array -kentät (Nämä näkyvät PDF-asetussivulla)
+    $pdf['shop_name']           = $c_name;
+    $pdf['shop_address_line_1'] = $c_addr;
+    $pdf['shop_city']           = $c_city;
+    $pdf['shop_postcode']       = $c_zip;
+    $pdf['shop_phone']          = $c_phone;
+    $pdf['shop_extra_1']        = "Y-tunnus: " . $c_id;
     
-    // Extra fields if available
-    $pdf['shop_extra_1']        = "Business ID: " . get_option('p_business_id');
+    // B. Pakotetaan myös koottu osoite (Monet pohjat lukevat vain tämän)
+    $pdf['shop_address'] = $c_name . "\n" . $c_addr . "\n" . $c_zip . " " . $c_city;
 
     update_option('wpo_wcpdf_settings_general', $pdf);
+
+    // C. Viimeinen oljenkorsi: Jos plugin lukee suoria option-arvoja nipun ulkopuolelta
+    update_option('wpo_wcpdf_shop_name', $c_name);
+    update_option('wpo_wcpdf_shop_address', $pdf['shop_address']);
 }
 
 /**
- * FULL ADMIN INTERFACE
+ * ADMIN UI
  */
 add_action('admin_menu', function() {
     add_menu_page('Purnukka Settings', 'Purnukka Stack', 'manage_options', 'purnukka-settings', 'render_purnukka_settings_page', 'dashicons-admin-generic', 2);
@@ -96,7 +109,7 @@ function render_purnukka_settings_page() {
     if (isset($_GET['settings-updated'])) purnukka_sync_master_data();
     ?>
     <div class="wrap">
-        <h1 style="color:#c5a059;">Purnukka Stack v0.20</h1>
+        <h1 style="color:#c5a059;">Purnukka Stack v0.21</h1>
         <hr>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
@@ -116,7 +129,7 @@ function render_purnukka_settings_page() {
                 </td></tr>
             </table>
 
-            <h3>2. SMTP Setup</h3>
+            <h3>2. Communication & SMTP</h3>
             <table class="form-table">
                 <tr><th>Public Email</th><td><input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" class="regular-text"></td></tr>
                 <tr><th>Host / User / Pass</th><td>
@@ -140,14 +153,14 @@ function render_purnukka_settings_page() {
                 </td></tr>
             </table>
 
-            <h3>4. Maintenance</h3>
+            <h3>4. Maintenance Mode</h3>
             <table class="form-table">
                 <tr><th>Curtain Mode</th><td>
                     <input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable Maintenance Mode
                 </td></tr>
             </table>
             
-            <?php submit_button('Save & Sync All Master Data'); ?>
+            <?php submit_button('Save & Sync Master Data'); ?>
         </form>
     </div>
     <?php
@@ -157,5 +170,18 @@ add_action('admin_init', function() {
     $s = ['p_villa_name','p_villa_tagline','purnukka_logo_url','purnukka_primary_color','purnukka_secondary_color','purnukka_accent_color','purnukka_dark_color','p_villa_email','p_smtp_host','p_smtp_user','p_smtp_pass','p_villa_phone','p_company_name','p_business_id','p_legal_address','p_legal_postcode','p_legal_city','p_maintenance_mode'];
     foreach($s as $o) register_setting('purnukka-settings-group', $o);
 });
+
+// Globaali CSS hallinta (Palautettu aiemmasta versiosta)
+add_action('wp_head', function() {
+    if (is_admin()) return;
+    $c1 = get_option('purnukka_primary_color', '#c5a059');
+    $c2 = get_option('purnukka_secondary_color', '#a3844a');
+    $c3 = get_option('purnukka_accent_color', '#f1c40f');
+    $c4 = get_option('purnukka_dark_color', '#1a1a1a');
+    echo "<style>:root { --p-primary: $c1; --p-secondary: $c2; --p-accent: $c3; --p-dark: $c4; }
+    .button, button, .mphb-book-button { background-color: var(--p-primary) !important; color: #fff !important; border:none !important; }
+    .button:hover, button:hover { background-color: var(--p-secondary) !important; }
+    a { color: var(--p-accent); } h1, h2, h3 { color: var(--p-dark) !important; }</style>";
+}, 20);
 
 new PurnukkaStackCore();
