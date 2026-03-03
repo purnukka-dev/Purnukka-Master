@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.33)
- * Description: The Final Master Piece: Global Countries, 4-Colors, SMTP, and Deep Contact Sync for PDF.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.34)
+ * Description: Scalable SPoT: Dynamic Logo Discovery by URL, Global Countries, 4-Colors, and SMTP.
  * Author: Purnukka Group Oy
- * Version: 0.33
+ * Version: 0.34
  */
 
 if ( !defined('ABSPATH') ) exit;
@@ -49,12 +49,14 @@ class PurnukkaStackCore {
         html,body{background:$dark!important;margin:0;padding:0;height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;overflow:hidden;}
         .c{text-align:center;animation:f 1.5s;padding:20px;} @keyframes f{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         img{max-height:120px;margin-bottom:30px} h1{color:$primary;font-size:3.5rem;margin:0;font-weight:700;} hr{border:0;height:1px;background:linear-gradient(to right,transparent,$primary,transparent);margin:25px auto;width:60%}
-        p{font-size:1.2rem;opacity:0.8;line-height:1.5;}
         </style></head><body><div class='c'>".($logo?"<img src='".esc_url($logo)."'>":"")."<h1>".esc_html($name)."</h1><hr><p>Opening soon!</p></div></body></html>";
         exit;
     }
 }
 
+/**
+ * INTELLIGENT SYNC ENGINE
+ */
 function purnukka_sync_master_data() {
     // 1. SMTP Sync
     $smtp = get_option('wp_mail_smtp', []);
@@ -66,37 +68,40 @@ function purnukka_sync_master_data() {
     $smtp['mail']['mailer'] = 'smtp';
     update_option('wp_mail_smtp', $smtp);
 
-    // 2. PDF Deep Precision Sync
+    // 2. PDF Deep Sync
     $pdf = get_option('wpo_wcpdf_settings_general', []);
-    $country_code = get_option('p_legal_country', 'FI');
-    $wc_countries = WC()->countries->get_countries();
-    $country_full_name = isset($wc_countries[$country_code]) ? $wc_countries[$country_code] : 'Finland';
+    $logo_url = get_option('purnukka_logo_url');
+    
+    // DYNAMIC LOGO DISCOVERY: Etsitään ID URL:n perusteella tällä sivustolla
+    $logo_id = attachment_url_to_postid($logo_url);
+    if ($logo_id) {
+        $pdf['header_logo'] = $logo_id; // Suora ID
+        $pdf['header_logo_obj'] = array('default' => $logo_id); // Objekti-muoto
+    }
 
     $c_name = get_option('p_company_name');
     $c_email = get_option('p_villa_email');
     $c_phone = get_option('p_villa_phone');
-    $c_id = get_option('p_business_id');
+    $c_country = get_option('p_legal_country', 'FI');
+    $wc_countries = WC()->countries->get_countries();
+    $country_name = isset($wc_countries[$c_country]) ? $wc_countries[$c_country] : 'Finland';
 
-    // Individual keys for PDF
     $pdf['shop_name'] = $c_name;
     $pdf['shop_address_line_1'] = get_option('p_legal_address');
     $pdf['shop_city'] = get_option('p_legal_city');
     $pdf['shop_postcode'] = get_option('p_legal_postcode');
-    $pdf['shop_country'] = $country_code;
+    $pdf['shop_country'] = $c_country;
     $pdf['shop_phone'] = $c_phone;
-    $pdf['shop_email_address'] = $c_email;
-    $pdf['shop_extra_1'] = "Business ID: " . $c_id;
+    $pdf['shop_extra_1'] = "Business ID: " . get_option('p_business_id');
 
-    // Object mapping for PDF internal structure (Fixing {"default":""} issues)
+    // Force Object Sync (Debugger fix)
     $pdf['shop_address_city']     = array('default' => get_option('p_legal_city'));
     $pdf['shop_address_postcode'] = array('default' => get_option('p_legal_postcode'));
-    $pdf['shop_address_country']  = array('default' => $country_code);
+    $pdf['shop_address_country']  = array('default' => $c_country);
     $pdf['shop_phone_number']     = array('default' => $c_phone);
-    $pdf['shop_email_address_obj'] = array('default' => $c_email);
-
-    // Final compiled address and footer
-    $pdf['shop_address'] = $c_name . "\n" . get_option('p_legal_address') . "\n" . get_option('p_legal_postcode') . " " . get_option('p_legal_city') . "\n" . $country_full_name;
-    $pdf['footer'] = $c_name . " | " . $c_email . " | " . $c_phone . " | Business ID: " . $c_id;
+    
+    $pdf['shop_address'] = $c_name . "\n" . get_option('p_legal_address') . "\n" . get_option('p_legal_postcode') . " " . get_option('p_legal_city') . "\n" . $country_name;
+    $pdf['footer'] = $c_name . " | " . $c_email . " | " . $c_phone . " | Business ID: " . get_option('p_business_id');
 
     update_option('wpo_wcpdf_settings_general', $pdf);
 }
@@ -110,51 +115,48 @@ function render_pukka_settings() {
     $wc_countries = WC()->countries->get_countries();
     ?>
     <div class="wrap">
-        <h1 style="color:#c5a059;">Purnukka Stack v0.33</h1>
+        <h1 style="color:#c5a059;">Purnukka Stack v0.34</h1>
         <hr>
         <form method="post" action="options.php">
             <?php settings_fields('purnukka-settings-group'); ?>
-            
-            <h3>1. Branding & 4-Color System</h3>
+            <h3>1. Branding (4-Colors & Scalable Logo)</h3>
             <table class="form-table">
                 <tr><th>Villa Name / Tagline</th><td>
                     <input type="text" name="p_villa_name" value="<?php echo esc_attr(get_option('p_villa_name')); ?>" class="regular-text">
                     <input type="text" name="p_villa_tagline" value="<?php echo esc_attr(get_option('p_villa_tagline')); ?>" class="regular-text">
                 </td></tr>
+                <tr><th>Logo URL</th><td><input type="text" name="purnukka_logo_url" value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" class="regular-text"></td></tr>
                 <tr><th>Colors</th><td>
                     <input type="color" name="purnukka_primary_color" value="<?php echo esc_attr(get_option('purnukka_primary_color', '#c5a059')); ?>"> Primary &nbsp;
                     <input type="color" name="purnukka_secondary_color" value="<?php echo esc_attr(get_option('purnukka_secondary_color', '#a3844a')); ?>"> Hover &nbsp;
                     <input type="color" name="purnukka_accent_color" value="<?php echo esc_attr(get_option('purnukka_accent_color', '#f1c40f')); ?>"> Accent &nbsp;
                     <input type="color" name="purnukka_dark_color" value="<?php echo esc_attr(get_option('purnukka_dark_color', '#1a1a1a')); ?>"> Dark
                 </td></tr>
-                <tr><th>Logo URL</th><td><input type="text" name="purnukka_logo_url" value="<?php echo esc_attr(get_option('purnukka_logo_url')); ?>" class="regular-text"></td></tr>
             </table>
-
-            <h3>2. Communication & SMTP Master</h3>
+            <h3>2. SMTP & Communication</h3>
             <table class="form-table">
-                <tr><th>Contact Details</th><td>
-                    <input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" placeholder="Public Email">
-                    <input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" placeholder="Phone Number">
+                <tr><th>Public Details</th><td>
+                    <input type="email" name="p_villa_email" value="<?php echo esc_attr(get_option('p_villa_email')); ?>" placeholder="Email">
+                    <input type="text" name="p_villa_phone" value="<?php echo esc_attr(get_option('p_villa_phone')); ?>" placeholder="Phone">
                 </td></tr>
-                <tr><th>SMTP Config</th><td>
+                <tr><th>SMTP Master</th><td>
                     <input type="text" name="p_smtp_host" value="<?php echo esc_attr(get_option('p_smtp_host')); ?>" placeholder="Host">
                     <input type="text" name="p_smtp_user" value="<?php echo esc_attr(get_option('p_smtp_user')); ?>" placeholder="User">
                     <input type="password" name="p_smtp_pass" value="<?php echo esc_attr(get_option('p_smtp_pass')); ?>" placeholder="Pass">
                 </td></tr>
             </table>
-
-            <h3>3. Legal & World Country SPoT</h3>
+            <h3>3. Legal SPoT</h3>
             <table class="form-table">
                 <tr><th>Company & VAT</th><td>
                     <input type="text" name="p_company_name" value="<?php echo esc_attr(get_option('p_company_name')); ?>" class="regular-text">
-                    <input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" placeholder="VAT ID">
+                    <input type="text" name="p_business_id" value="<?php echo esc_attr(get_option('p_business_id')); ?>" placeholder="Y-tunnus">
                 </td></tr>
-                <tr><th>Address</th><td>
+                <tr><th>Address / City / Zip</th><td>
                     <input type="text" name="p_legal_address" value="<?php echo esc_attr(get_option('p_legal_address')); ?>" placeholder="Street">
-                    <input type="text" name="p_legal_postcode" value="<?php echo esc_attr(get_option('p_legal_postcode')); ?>" style="width:80px" placeholder="Zip">
-                    <input type="text" name="p_legal_city" value="<?php echo esc_attr(get_option('p_legal_city')); ?>" style="width:160px" placeholder="City">
+                    <input type="text" name="p_legal_postcode" value="<?php echo esc_attr(get_option('p_legal_postcode')); ?>" style="width:80px">
+                    <input type="text" name="p_legal_city" value="<?php echo esc_attr(get_option('p_legal_city')); ?>" style="width:160px">
                 </td></tr>
-                <tr><th>Select Country</th><td>
+                <tr><th>Country</th><td>
                     <select name="p_legal_country" style="width:250px;">
                         <?php foreach($wc_countries as $code => $name): ?>
                             <option value="<?php echo $code; ?>" <?php selected(get_option('p_legal_country', 'FI'), $code); ?>><?php echo $name; ?></option>
@@ -162,13 +164,11 @@ function render_pukka_settings() {
                     </select>
                 </td></tr>
             </table>
-
-            <h3>4. Maintenance Mode</h3>
+            <h3>4. Maintenance</h3>
             <table class="form-table">
                 <tr><th>Curtain Mode</th><td><input type="checkbox" name="p_maintenance_mode" value="on" <?php checked(get_option('p_maintenance_mode'), 'on'); ?>> Enable Curtain</td></tr>
             </table>
-            
-            <?php submit_button('Save & Sync Global Master Data'); ?>
+            <?php submit_button('Save & Global Scalable Sync'); ?>
         </form>
     </div>
     <?php
