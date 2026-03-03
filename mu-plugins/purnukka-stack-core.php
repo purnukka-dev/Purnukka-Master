@@ -1,16 +1,15 @@
 <?php
 /**
- * Plugin Name: Purnukka Stack - Core Branding (v0.10)
- * Description: Master Control Panel for property branding, SMTP, and admin cleanup.
+ * Plugin Name: Purnukka Stack - Core Branding (v0.11)
+ * Description: Master Control Panel with Physical SMTP Sync & Admin Cleanup.
  * Author: Purnukka Group Oy
- * Version: 0.10
+ * Version: 0.11
  */
 
 if ( !defined('ABSPATH') ) exit;
 
 /**
  * CORE LOGIC CLASS
- * Handles admin branding and UI cleanup.
  */
 class PurnukkaStackCore {
 
@@ -63,6 +62,10 @@ add_action('admin_menu', function() {
 });
 
 function render_purnukka_settings_page() {
+    // Force sync on page load if settings were just saved
+    if (isset($_GET['settings-updated']) && $_GET['settings-updated']) {
+        purnukka_sync_smtp_to_plugin();
+    }
     ?>
     <div class="wrap">
         <h1 style="color: #c5a059; font-weight: bold;">Purnukka Stack – Configuration</h1>
@@ -179,18 +182,8 @@ add_action('wp_head', function() {
 }, 20);
 
 /**
- * SMTP SETTINGS INJECTION
- * Forces WP Mail SMTP to use Purnukka Stack variables
+ * SMTP SETTINGS SYNC
  */
-/**
- * SMTP SETTINGS SYNC (v0.11)
- * This physically updates WP Mail SMTP settings when you save Purnukka settings.
- */
-add_action('update_option_p_smtp_host', 'purnukka_sync_smtp_to_plugin');
-add_action('update_option_p_smtp_user', 'purnukka_sync_smtp_to_plugin');
-add_action('update_option_p_smtp_pass', 'purnukka_sync_smtp_to_plugin');
-add_action('update_option_p_smtp_port', 'purnukka_sync_smtp_to_plugin');
-
 function purnukka_sync_smtp_to_plugin() {
     $current_options = get_option('wp_mail_smtp', []);
     
@@ -208,6 +201,13 @@ function purnukka_sync_smtp_to_plugin() {
 
     update_option('wp_mail_smtp', $current_options);
 }
+
+// Triggers sync whenever SMTP options are updated
+add_action('update_option_p_smtp_host', 'purnukka_sync_smtp_to_plugin');
+add_action('update_option_p_smtp_user', 'purnukka_sync_smtp_to_plugin');
+add_action('update_option_p_smtp_pass', 'purnukka_sync_smtp_to_plugin');
+add_action('update_option_p_smtp_port', 'purnukka_sync_smtp_to_plugin');
+
 /**
  * LOGO & TEXT REPLACEMENT
  */
