@@ -1,43 +1,38 @@
 <?php
 /**
- * Module: Checkout & Payment Logic (v1.5 PORT)
+ * Module: Checkout & Payment Logic (v1.5 ENHANCED)
  * Ported from: v1.2 Core logic.
- * Function: Handles the "Purnukka Flex" dynamic quantity and cart cleanup.
- * Code standards: English variables and comments.
+ * Function: Handles "Purnukka Flex" (ID 276) and smart redirects for corrections.
  */
 
 if (!defined('ABSPATH')) exit;
 
-/**
- * Listen for the add-to-cart trigger and manage the checkout flow.
- * Specifically designed for Product ID 276 (Purnukka Flex).
- */
 add_action('template_redirect', function() {
-    
-    // Check if WooCommerce is active and we have our specific add-to-cart trigger
-    if ( !function_exists('WC') || !isset($_GET['add-to-cart']) ) {
-        return;
+    if (!function_exists('WC')) return;
+
+    $target_product_id = 276; // Purnukka Flex
+    $checkin_page_url = home_url('/check-in/'); // Palautussivu
+
+    // 1. LISÄYS: Kun tullaan matkustajailmoituksesta
+    if (isset($_GET['add-to-cart']) && intval($_GET['add-to-cart']) === $target_product_id) {
+        WC()->cart->empty_cart();
+        $quantity = isset($_GET['quantity']) ? intval($_GET['quantity']) : 1;
+        WC()->cart->add_to_cart($target_product_id, $quantity);
+        wp_safe_redirect(wc_get_checkout_url());
+        exit;
     }
 
-    $target_product_id = 276; // Purnukka Flex ID
-    $incoming_product_id = intval($_GET['add-to-cart']);
-
-    // Only run this logic if the specific Flex product is being added
-    if ($incoming_product_id === $target_product_id) {
-        
-        // 1. Clear the cart to prevent accumulation of old attempts
-        WC()->cart->empty_cart();
-
-        // 2. Get the quantity (sum calculated by the check-in UI)
-        // Default to 1 if not specified, though UI always sends the sum.
-        $requested_quantity = isset($_GET['quantity']) ? intval($_GET['quantity']) : 1;
-
-        // 3. Add the product with the dynamic quantity (1€ * quantity = Total)
-        WC()->cart->add_to_cart($target_product_id, $requested_quantity);
-
-        // 4. Force redirect directly to the checkout page
-        // Skipping the cart page for a seamless "Pay Now" experience.
-        wp_safe_redirect( wc_get_checkout_url() );
+    // 2. POISTO/TYHJENNYS: Jos asiakas on kassalla ja poistaa tuotteen (kori tyhjenee)
+    // Ohjataan hänet takaisin ilmoitussivulle, jotta hän voi aloittaa alusta.
+    if (is_checkout() && WC()->cart->is_empty() && !isset($_GET['order-received'])) {
+        wp_safe_redirect($checkin_page_url);
         exit;
     }
 });
+
+/**
+ * Varmistetaan, että Flex-tuotteella on aina näkyvä poistonappi kassalla.
+ */
+add_filter('woocommerce_cart_item_remove_link', function($link, $cart_item_key) {
+    return $link; 
+}, 10, 2);
