@@ -1,17 +1,18 @@
 <?php
 /**
  * Module: Check-in UI (v1.5 FINAL MASTER PORT)
- * Tämä on 1:1 siirto "Gold Welcome Home" -versiosta.
+ * Ported: 1:1 migration from "Gold Welcome Home" version.
+ * Code standards: English variables and comments.
  */
 
 if (!defined('ABSPATH')) exit;
 
 add_shortcode('purnukka_checkin', function($atts) {
-    // Haetaan globaali data v1.5 moottorista
-    $config = $GLOBALS['purnukka']->config;
-    $accent = $config['design_system']['colors']['accent'] ?? '#b89b5e';
-    $primary = $config['design_system']['colors']['primary'] ?? '#1a2b28';
-    $villa_name = $config['property_info']['name'] ?? 'Villa Purnukka';
+    // Fetch global data from the v1.5 engine
+    $purnukka_config = $GLOBALS['purnukka']->config;
+    $accent_color    = $purnukka_config['design_system']['colors']['accent'] ?? '#b89b5e';
+    $primary_color   = $purnukka_config['design_system']['colors']['primary'] ?? '#1a2b28';
+    $property_name   = $purnukka_config['property_info']['name'] ?? 'Villa Purnukka';
 
     ob_start(); ?>
 
@@ -19,7 +20,7 @@ add_shortcode('purnukka_checkin', function($atts) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
     <style>
-        /* ALKUPERÄINEN MASTER-TYYLITYS (1:1 kopio) */
+        /* ORIGINAL MASTER STYLING */
         .site-content, .entry-content, .post-inner { padding-top: 0 !important; margin-top: 0 !important; }
 
         .purnukka-welcome-header {
@@ -34,7 +35,7 @@ add_shortcode('purnukka_checkin', function($atts) {
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 5px;
-            color: <?php echo $accent; ?>;
+            color: <?php echo $accent_color; ?>;
             font-weight: bold;
             display: block;
             margin-bottom: 8px;
@@ -43,7 +44,7 @@ add_shortcode('purnukka_checkin', function($atts) {
         .purnukka-welcome-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 48px;
-            color: <?php echo $accent; ?>; 
+            color: <?php echo $accent_color; ?>; 
             margin: 0;
             font-weight: 400;
             font-style: italic;
@@ -64,12 +65,12 @@ add_shortcode('purnukka_checkin', function($atts) {
             position: relative;
         }
 
-        .p-top-icon { color: <?php echo $accent; ?>; font-size: 28px; margin-bottom: 12px; display: block; }
+        .p-top-icon { color: <?php echo $accent_color; ?>; font-size: 28px; margin-bottom: 12px; display: block; }
 
         .p-step-box {
             background: #fdfdfd;
             border: 1px solid #e8e8e8;
-            border-left: 6px solid <?php echo $accent; ?>; 
+            border-left: 6px solid <?php echo $accent_color; ?>; 
             padding: 20px 30px;
             display: flex;
             align-items: center;
@@ -79,35 +80,35 @@ add_shortcode('purnukka_checkin', function($atts) {
         }
 
         .btn-p-dark {
-            background: <?php echo $primary; ?>; color: #fff; border: none; padding: 12px 25px;
+            background: <?php echo $primary_color; ?>; color: #fff; border: none; padding: 12px 25px;
             font-weight: bold; text-transform: uppercase; font-size: 11px;
             cursor: pointer; letter-spacing: 1px; transition: 0.3s;
         }
-        .btn-p-dark:hover { background: <?php echo $accent; ?>; }
+        .btn-p-dark:hover { background: <?php echo $accent_color; ?>; }
 
         .p-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
 
-        .p-input-field { background: #fff; border: 1px solid <?php echo $accent; ?>; padding: 10px 15px; }
+        .p-input-field { background: #fff; border: 1px solid <?php echo $accent_color; ?>; padding: 10px 15px; }
 
         .p-input-field label {
-            display: block; font-size: 9px; color: <?php echo $accent; ?>;
+            display: block; font-size: 9px; color: <?php echo $accent_color; ?>;
             text-transform: uppercase; font-weight: bold; margin-bottom: 4px;
         }
         .p-input-field label i { margin-right: 6px; }
 
         .p-input-field input {
             border: none; width: 100%; font-weight: bold;
-            font-size: 20px; color: <?php echo $primary; ?>; outline: none; background: transparent;
+            font-size: 20px; color: <?php echo $primary_color; ?>; outline: none; background: transparent;
             height: 24px;
         }
 
         .p-price-summary { border-top: 1px solid #f0f0f0; padding-top: 15px; margin-bottom: 20px; text-align: center; }
 
-        .p-price-note { font-size: 10px; color: <?php echo $accent; ?>; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .p-price-total { font-size: 38px; font-weight: bold; color: <?php echo $primary; ?>; display: block; line-height: 1; margin-top: 5px; }
+        .p-price-note { font-size: 10px; color: <?php echo $accent_color; ?>; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .p-price-total { font-size: 38px; font-weight: bold; color: <?php echo $primary_color; ?>; display: block; line-height: 1; margin-top: 5px; }
 
         .btn-p-gold {
-            background: <?php echo $accent; ?> !important; 
+            background: <?php echo $accent_color; ?> !important; 
             color: #fff !important;
             border: none; padding: 18px; width: 100%;
             font-weight: bold; text-transform: uppercase;
@@ -125,40 +126,40 @@ add_shortcode('purnukka_checkin', function($atts) {
 
     <div class="purnukka-premium-wrapper">
         <i class="fas fa-key p-top-icon"></i> 
-        <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: <?php echo $primary; ?>; margin: 0 0 8px 0; border-bottom: 2px solid <?php echo $accent; ?>; display: inline-block; padding-bottom: 5px;">Traveler Declaration & Check-in</h2>
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: <?php echo $primary_color; ?>; margin: 0 0 8px 0; border-bottom: 2px solid <?php echo $accent_color; ?>; display: inline-block; padding-bottom: 5px;">Traveler Declaration & Check-in</h2>
         
         <p style="font-size: 13px; color: #555; margin: 12px auto 25px auto; max-width: 650px; line-height: 1.7; text-align: center; font-style: italic;">
             Your comfort and safety are our priorities. A legal traveler declaration ensures your stay is documented correctly.
         </p>
 
-        <div class="p-step-box" id="p-step-1">
+        <div class="p-step-box" id="p-step-initial">
             <div>
-                <strong style="color: <?php echo $primary; ?>; font-size: 15px;">Has your group size changed since booking?</strong><br>
+                <strong style="color: <?php echo $primary_color; ?>; font-size: 15px;">Has your group size changed since booking?</strong><br>
                 <span style="font-size: 11px; color: #777;">Update your declaration and settle the additional guest fee here.</span>
             </div>
-            <button class="btn-p-dark" onclick="activateForm()">Yes, add guests</button>
+            <button class="btn-p-dark" onclick="toggleFormDisplay()">Yes, add guests</button>
         </div>
 
         <div id="purnukka-form-view" style="display:none; animation: fadeIn 0.4s ease;">
-            <h3 style="font-family: 'Playfair Display', serif; font-size: 20px; color: <?php echo $primary; ?>; margin-bottom: 15px; text-align:left;">Update Guest Details</h3>
+            <h3 style="font-family: 'Playfair Display', serif; font-size: 20px; color: <?php echo $primary_color; ?>; margin-bottom: 15px; text-align:left;">Update Guest Details</h3>
             
             <div class="p-input-row">
                 <div class="p-input-field">
                     <label><i class="fas fa-users"></i> Additional guests (qty)</label>
-                    <input type="number" id="p-guests" value="1" min="1" oninput="runRecalc()">
+                    <input type="number" id="guest-count" value="1" min="1" oninput="calculateTotalAmount()">
                 </div>
                 <div class="p-input-field">
                     <label><i class="fas fa-calendar-day"></i> Nights of stay</label>
-                    <input type="number" id="p-nights" value="2" min="2" oninput="runRecalc()">
+                    <input type="number" id="night-count" value="2" min="2" oninput="calculateTotalAmount()">
                 </div>
             </div>
 
             <div class="p-price-summary">
-                <span id="p-info" class="p-price-note">STANDARD RATE (30€/NIGHT)</span>
-                <span class="p-price-total"><span id="p-final-sum">60</span> €</span>
+                <span id="rate-information" class="p-price-note">STANDARD RATE (30€/NIGHT)</span>
+                <span class="p-price-total"><span id="total-sum-display">60</span> €</span>
             </div>
 
-            <button class="btn-p-gold" onclick="proceedToPay()">Update and Secure Payment</button>
+            <button class="btn-p-gold" onclick="initiatePayment()">Update and Secure Payment</button>
             <div style="text-align:center; margin-top:12px;">
                 <span class="btn-cancel-link" onclick="location.reload()">Return to Overview</span>
             </div>
@@ -166,27 +167,28 @@ add_shortcode('purnukka_checkin', function($atts) {
     </div>
 
     <script>
-    function activateForm() {
-        document.getElementById('p-step-1').style.display = 'none';
+    function toggleFormDisplay() {
+        document.getElementById('p-step-initial').style.display = 'none';
         document.getElementById('purnukka-form-view').style.display = 'block';
     }
-    function runRecalc() {
-        const g = parseInt(document.getElementById('p-guests').value) || 0;
-        let n = parseInt(document.getElementById('p-nights').value) || 0;
-        if (n < 2) n = 2;
-        let up = 30;
-        let note = "STANDARD RATE (30€/NIGHT)";
+    function calculateTotalAmount() {
+        const guests = parseInt(document.getElementById('guest-count').value) || 0;
+        let nights = parseInt(document.getElementById('night-count').value) || 0;
+        if (nights < 2) nights = 2;
         
-        if (n > 2 && n <= 6) { up = 20; note = "MID-STAY BENEFIT (20€/NIGHT)"; }
-        else if (n > 6 && n <= 13) { up = 15; note = "WEEKLY BENEFIT (15€/NIGHT)"; }
-        else if (n >= 14) { up = 10; note = "LONG-STAY BENEFIT (10€/NIGHT)"; }
+        let unitPrice = 30;
+        let rateLabel = "STANDARD RATE (30€/NIGHT)";
         
-        document.getElementById('p-final-sum').innerText = g * n * up;
-        document.getElementById('p-info').innerText = note;
+        if (nights > 2 && nights <= 6) { unitPrice = 20; rateLabel = "MID-STAY BENEFIT (20€/NIGHT)"; }
+        else if (nights > 6 && nights <= 13) { unitPrice = 15; rateLabel = "WEEKLY BENEFIT (15€/NIGHT)"; }
+        else if (nights >= 14) { unitPrice = 10; rateLabel = "LONG-STAY BENEFIT (10€/NIGHT)"; }
+        
+        document.getElementById('total-sum-display').innerText = guests * nights * unitPrice;
+        document.getElementById('rate-information').innerText = rateLabel;
     }
-    function proceedToPay() {
-        const val = document.getElementById('p-final-sum').innerText;
-        window.location.href = window.location.origin + '/payment-checkout/?add-to-cart=276&quantity=' + val;
+    function initiatePayment() {
+        const amount = document.getElementById('total-sum-display').innerText;
+        window.location.href = window.location.origin + '/payment-checkout/?add-to-cart=276&quantity=' + amount;
     }
     </script>
 
