@@ -1,58 +1,46 @@
 <?php
 /**
- * Module: Visual Branding (v1.5 FULL PORT)
- * Description: Injects custom admin styles, colors, and tier badges based on the global config.
+ * Module: Branding & Business Logic (v1.5 Master)
+ * Standards: English code, Finnish UI, Nuclear overrides.
  */
 
 if (!defined('ABSPATH')) exit;
 
-add_action('admin_head', function() {
-    // Access global Purnukka instance
+/**
+ * NUCLEAR PDF SYNC
+ * Forces business data from context.json into WooCommerce PDF Invoices.
+ * This is the ONLY reliable way to ensure white-label consistency.
+ */
+add_filter('option_wpo_wcpdf_settings_general', function($settings) {
     $config = $GLOBALS['purnukka']->config;
     
-    // Extract colors from the design system configuration
-    $primary_color = $config['design_system']['colors']['primary'] ?? '#1a2b28';
-    $accent_color  = $config['design_system']['colors']['accent'] ?? '#b89b5e';
+    // Safety check: if config is missing, don't break the invoices
+    if (empty($config['property_info'])) return $settings;
 
-    echo "<style>
-        /* WP ADMIN: Top bar and menu background */
-        #wpadminbar, #adminmenu, #adminmenu .wp-submenu, 
-        #adminmenuback, #adminmenuwrap { 
-            background-color: $primary_color !important; 
-        }
+    $info = $config['property_info'];
 
-        /* WP ADMIN: Active menu items and primary buttons */
-        #adminmenu li.current a.menu-top, 
-        #adminmenu li.wp-has-current-submenu a.wp-has-current-submenu,
-        .wp-core-ui .button-primary { 
-            background: $accent_color !important; 
-            border-color: $accent_color !important;
-            color: $primary_color !important; 
-            text-shadow: none !important;
+    // 1. Logo Handling
+    if (!empty($info['logo_url'])) {
+        $logo_id = attachment_url_to_postid($info['logo_url']);
+        if ($logo_id) {
+            $settings['header_logo'] = $logo_id;
+            $settings['header_logo_height'] = '35';
         }
+    }
 
-        /* Ohjaamo specific UI elements (v1.5) */
-        .v-badge { 
-            background: $accent_color !important; 
-            color: $primary_color !important; 
-            padding: 2px 8px; 
-            border-radius: 4px; 
-            font-weight: bold; 
-        }
-        
-        .tier-tag { 
-            color: $accent_color !important; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            font-size: 10px; 
-            letter-spacing: 1px; 
-        }
+    // 2. Business Identity (The Nuclear Override)
+    $settings['shop_name'] = $info['company_name'] ?? '';
+    $settings['shop_address_line_1'] = $info['address'] ?? '';
+    
+    // 3. Object Key Fix (The "Debugger" fix from v1.2)
+    // We use the array('default' => ...) structure to satisfy the plugin's requirements.
+    $city     = $info['city'] ?? '';
+    $postcode = $info['postcode'] ?? '';
+    $country  = $info['country_code'] ?? 'FI';
 
-        /* Login page branding (Optional) */
-        .login h1 a { 
-            background-image: none, url('" . esc_url($config['property_info']['logo_url'] ?? '') . "') !important;
-            background-size: contain !important;
-            width: 100% !important;
-        }
-    </style>";
-});
+    $settings['shop_address_city']     = array('default' => $city);
+    $settings['shop_address_postcode'] = array('default' => $postcode);
+    $settings['shop_address_country']  = array('default' => $country);
+
+    return $settings;
+}, 999); // High priority to win over manual database settings
