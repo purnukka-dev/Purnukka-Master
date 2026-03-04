@@ -1,33 +1,17 @@
 <?php
 /**
- * Module: Branding
- * Purpose: Inject property-specific logos and colors into WP Admin and Frontend.
+ * Module: Visual Branding
  */
+if (!defined('ABSPATH')) exit;
 
-add_action('wp_head', 'p_apply_frontend_branding');
-add_action('admin_head', 'p_apply_admin_branding');
-
-function p_apply_frontend_branding() {
+add_action('admin_head', function() {
     $config = $GLOBALS['purnukka']->config;
-    $primary = $config['colors']['primary'] ?? '#1a2b28';
-    
-    echo "<style>:root { --purnukka-brand: {$primary}; }</style>";
-}
+    $bg = $config['design_system']['colors']['primary'] ?? '#1a2b28';
+    $accent = $config['design_system']['colors']['accent'] ?? '#b89b5e';
 
-function p_apply_admin_branding() {
-    $config = $GLOBALS['purnukka']->config;
-    $logo = $config['branding']['logo_url'] ?? '';
-    
-    if ($logo) {
-        echo "<style>
-            #adminmenu::before {
-                content: '';
-                display: block;
-                height: 60px;
-                background: url('{$logo}') no-content center center;
-                background-size: contain;
-                margin: 10px;
-            }
-        </style>";
-    }
-}
+    echo "<style>
+        #wpadminbar, #adminmenu, #adminmenu .wp-submenu, #adminmenuback, #adminmenuwrap { background-color: $bg !important; }
+        #adminmenu li.current a.menu-top, .wp-core-ui .button-primary { background: $accent !important; border-color: $accent !important; color: $bg !important; }
+        .tier-tag { background: $accent; color: $bg; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+    </style>";
+});

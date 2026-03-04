@@ -1,27 +1,16 @@
 <?php
 /**
  * Module: Access Control
- * Description: Enforces tier-based limits (Solo, Growth, Unlimited).
- * Language: English
  */
-
 if (!defined('ABSPATH')) exit;
 
-class Purnukka_Access_Control {
-    public function __construct() {
-        add_action('admin_init', [$this, 'enforce_tier_restrictions']);
-    }
+add_action('admin_init', function() {
+    $config = $GLOBALS['purnukka']->config;
+    $max_allowed = (int)($config['limits']['max_locations'] ?? 1);
+    
+    $count_types = (int)wp_count_posts('mphb_room_type')->publish;
 
-    public function enforce_tier_restrictions() {
-        $config = $GLOBALS['purnukka']->config;
-        $tier = $config['product']['tier'] ?? 'Solo';
-        
-        // Example: If on Solo tier, prevent access to "Smart Locks" even if toggled in JSON
-        if ($tier === 'Solo') {
-            // We can add logic here to override features if they are not allowed in Solo
-            // For now, let's just keep it as a placeholder for license validation
-        }
+    if ($count_types >= $max_allowed) {
+        remove_submenu_page('edit.php?post_type=mphb_room_type', 'post-new.php?post_type=mphb_room_type');
     }
-}
-
-new Purnukka_Access_Control();
+});
