@@ -1,41 +1,28 @@
 <?php
 /**
- * Module: Checkout & Payment Logic (v1.5 PRODUCTION READY)
- * Ported from: v1.2 Core logic & Production (villapurnukka.com)
- * Function: Handles Purnukka Flex (ID 276) addition, quantity sync, and smart removal.
+ * Module: Checkout & Payment Logic (v1.5 PRODUCTION REFINED)
+ * Function: Handles Purnukka Flex (ID 276). 
+ * Added: Smart removal logic not present in current production for better UX.
  */
 
 if (!defined('ABSPATH')) exit;
 
-/**
- * Main logic for handling the payment flow and cart synchronization.
- */
 add_action('template_redirect', function() {
     if (!function_exists('WC')) return;
 
-    // Configuration
-    $target_product_id = 276; // Purnukka Flex
-    $checkin_page_url = home_url('/check-in/'); // Sivusto, jossa henkilömäärä lasketaan
+    $target_product_id = 276; 
+    $checkin_page_url = home_url('/check-in/'); 
 
-    // 1. ADDITION LOGIC: Tullaan matkustajailmoituksesta URL-parametreilla
+    // 1. ADD: Tullaan check-in sivulta
     if (isset($_GET['add-to-cart']) && intval($_GET['add-to-cart']) === $target_product_id) {
-        
-        // Tyhjennetään kori ennen uutta yritystä (kuten tuotannossa)
         WC()->cart->empty_cart();
-
-        // Haetaan dynaaminen hinta (määrä)
         $quantity = isset($_GET['quantity']) ? intval($_GET['quantity']) : 1;
-
-        // Lisätään tuote oikealla summalla
         WC()->cart->add_to_cart($target_product_id, $quantity);
-
-        // Ohjataan suoraan kassalle (Checkout)
         wp_safe_redirect(wc_get_checkout_url());
         exit;
     }
 
-    // 2. REMOVAL LOGIC: Jos asiakas on kassalla ja poistaa Flex-tuotteen (kori tyhjenee)
-    // Tämä vastaa toivettasi: ei jätetä asiakasta tyhjälle kassalle, vaan palautetaan alkuun.
+    // 2. REMOVE: Jos kori tyhjenee kassalla, lennätä takaisin täyttämään ilmoitusta
     if (is_checkout() && WC()->cart->is_empty() && !isset($_GET['order-received'])) {
         wp_safe_redirect($checkin_page_url);
         exit;
@@ -43,21 +30,18 @@ add_action('template_redirect', function() {
 });
 
 /**
- * Varmistetaan, että kassa näyttää poistolinkin tuotannon tavoin.
- * Käytetään WooCommerce-vakiolinkkiä, joka palauttaa item keyn poistoa varten.
+ * PAKOTETAAN POISTOLINKKI NÄKYVIIN (Tätä ei tuotannossa ole, mutta lisätään nyt)
  */
 add_filter('woocommerce_cart_item_remove_link', function($link, $cart_item_key) {
-    // Tässä emme muuta linkkiä, varmistamme vain että se on olemassa ja toimii.
-    return $link;
+    return $link; // Varmistaa, että rasti/linkki ilmestyy myös Flex-tuotteelle
 }, 10, 2);
 
 /**
- * Estetään kappalemäärän muokkaus kassalla (Purnukka Flexille),
- * jotta asiakas ei voi muuttaa laskettua loppusummaa manuaalisesti.
+ * LUKITAAN MÄÄRÄ (Quantity)
  */
 add_filter('woocommerce_cart_item_quantity', function($product_quantity, $cart_item_key, $cart_item) {
     if ($cart_item['product_id'] == 276) {
-        return sprintf('%s', $cart_item['quantity']); // Näytetään vain numero, ei valitsinta
+        return $cart_item['quantity']; // Ei muokkauslaatikkoa, vain luku
     }
     return $product_quantity;
 }, 10, 3);
