@@ -2,7 +2,6 @@
 /**
  * Purnukka_Core Class
  * The central brain of the Purnukka Stack.
- * Handles module loading and provides the foundation for Hub synchronization.
  */
 
 if (!defined('ABSPATH')) exit;
@@ -19,15 +18,40 @@ class Purnukka_Core {
         // Register Admin Panel
         add_action('admin_menu', [$this, 'register_admin_panel']);
 
-        /** * API Sync - Disabled until Hub.purnukka.com is ready
-         * To enable, uncomment the line below and set your YOUR_SECRET_HUB_TOKEN
-         */
+        // NEW: Register AJAX handler for the Dashboard toggles
+        add_action('wp_ajax_update_purnukka_feature', [$this, 'handle_feature_switch']);
+
+        /** * API Sync - Disabled until Hub.purnukka.com is ready */
         // add_action('rest_api_init', [$this, 'register_api_routes']);
     }
 
     /**
-     * Load settings from local JSON file (Property Context)
+     * AJAX Handler: Updates context.json when a toggle is flipped
      */
+    public function handle_feature_switch() {
+        if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+        
+        $feature = sanitize_text_field($_POST['feature']);
+        $status  = $_POST['status'] === 'true'; 
+
+        if (empty($this->config)) $this->load_config();
+
+        // Update the feature status in memory
+        $this->config['features'][$feature] = $status;
+
+        // Write back to context.json
+        $updated = file_put_contents(
+            $this->config_path, 
+            json_encode($this->config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
+
+        if ($updated) {
+            wp_send_json_success('Configuration updated');
+        } else {
+            wp_send_json_error('Failed to write to context.json');
+        }
+    }
+
     private function load_config() {
         if (file_exists($this->config_path)) {
             $json_data = file_get_contents($this->config_path);
@@ -35,9 +59,6 @@ class Purnukka_Core {
         }
     }
 
-    /**
-     * Boot enabled feature modules dynamically
-     */
     private function boot_modules() {
         $features = $this->config['features'] ?? [];
         foreach ($features as $module => $enabled) {
@@ -50,9 +71,6 @@ class Purnukka_Core {
         }
     }
 
-    /**
-     * Register REST API endpoints (Ready for future Hub sync)
-     */
     public function register_api_routes() {
         register_rest_route('purnukka/v1', '/sync', [
             'methods'             => 'POST',
@@ -61,60 +79,38 @@ class Purnukka_Core {
         ]);
     }
 
-    /**
-     * Security check: Verify Bearer Token from the Hub
-     */
     public function verify_api_token($request) {
         $auth_header = $request->get_header('Authorization');
         if (!$auth_header) return false;
-
         $master_token = 'YOUR_SECRET_HUB_TOKEN'; 
         return $auth_header === 'Bearer ' . $master_token;
     }
 
-    /**
-     * Update context.json when the Hub pushes new data
-     */
     public function handle_config_sync($request) {
         $new_config = $request->get_json_params();
-
         if (empty($new_config)) {
             return new WP_Error('empty_config', 'No data received', ['status' => 400]);
         }
-
         $updated = file_put_contents(
             $this->config_path, 
             json_encode($new_config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
         );
-
         if ($updated) {
-            return new WP_REST_Response([
-                'success' => true,
-                'message' => 'Config synced',
-                'property' => $new_config['property_info']['name'] ?? 'Unknown'
-            ], 200);
+            return new WP_REST_Response(['success' => true, 'message' => 'Config synced'], 200);
         }
-
         return new WP_Error('save_failed', 'Failed to write JSON', ['status' => 500]);
     }
 
     public function register_admin_panel() {
         add_menu_page(
-            'Purnukka', 
-            'Purnukka', 
-            'manage_options', 
-            'purnukka-stack', 
-            [$this, 'render_dashboard'], 
-            'dashicons-admin-generic', 
-            2
+            'Purnukka', 'Purnukka', 'manage_options', 'purnukka-stack', 
+            [$this, 'render_dashboard'], 'dashicons-admin-generic', 2
         );
     }
 
     public function render_dashboard() {
-        // Points to the new modular view path
         include_once __DIR__ . '/views/admin-dashboard.php';
     }
 }
 
-// Global instance to make the engine accessible to modules
 $GLOBALS['purnukka'] = new Purnukka_Core();
