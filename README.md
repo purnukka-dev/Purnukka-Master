@@ -1,73 +1,43 @@
-# Purnukka Stack (v0.5)
-**The Ultimate Direct Booking SaaS Engine for Short-Term Rental Owners.**
+# Purnukka Stack v1.5
 
-Purnukka Stack is a specialized WordPress-based hosting environment designed for property owners transitioning from Airbnb and Booking.com to direct bookings. It utilizes a "Single Core, Multi-Tier" architecture to manage multiple service levels from a single codebase.
+Purnukka Stack is a modular SaaS engine designed for high-end accommodation management. It enables property owners to manage branding, AI-driven guest communication, and automated checkout processes across multiple villas through a centralized Hub.
 
----
+## 🏗 Architecture Overview
 
-## 🚀 Core Components (mu-plugins)
+The system follows a modular "Conductor-Module" pattern:
 
-The stack is driven by three main logic controllers located in the `mu-plugins` directory:
+- **The Loader** (`mu-plugins/purnukka-stack-loader.php`): The entry point that boots the core engine.
+- **The Core** (`mu-plugins/purnukka-stack/core.php`): The "brain" that reads configuration, manages dynamic module loading, and provides the REST API for Hub synchronization.
+- **Modules** (`mu-plugins/purnukka-stack/modules/`): Independent features (AI, Branding, Access Control) that can be toggled on/off via the Hub.
+- **Config** (`purnukka-config/context.json`): A local, property-specific JSON file that stores all settings, limits, and rules.
 
-1.  **Core Branding (v0.4)**: 
-    - Handles white-labeling of the WP Admin.
-    - Injects dynamic CSS variables (Colors) based on the tier.
-    - Customizes the admin footer and removes WordPress branding.
+## 🚀 Key Features
 
-2.  **Access Control (v0.4)**: 
-    - Enforces subscription limits (Solo, Growth, Infinite).
-    - Automatically hides "Add New" buttons in MotoPress if the location limit is reached.
-    - Prevents unauthorized property creation via direct URLs.
+- **Centralized Management:** Sync settings from `hub.purnukka.com` (MainWP) via REST API.
+- **AI-Driven Hosting:** Automated guest assistance using property-specific rules.
+- **Dynamic Branding:** Automatic injection of logos, colors, and design systems.
+- **Tier-Based Limits:** Built-in support for Solo, Growth, and Infinite subscription tiers.
+- **Checkout Automation:** Tax management and branded invoice generation for WooCommerce.
 
-3.  **AI Tier Controller (v0.5)**: 
-    - Connects the property rules to the AI engine (Meow Apps/MWAI).
-    - Overwrites system instructions with property-specific data (Address, Capacity, Rules).
-    - Adapts the AI's tone and role based on the selected tier.
+## 🛠 Installation & Setup
 
----
+1. **Deploy the Engine:** Upload the `purnukka-stack` folder and the loader to your `wp-content/mu-plugins/` directory.
+2. **Configuration:** Ensure a `purnukka-config/` directory exists in `wp-content/` with a valid `context.json`.
+3. **API Access:** Set your `Authorization: Bearer` token in the Core file to enable remote syncing.
+4. **Hub Integration:** Add the property to your MainWP Hub and point your configuration scripts to the `/wp-json/purnukka/v1/sync` endpoint.
 
-## 🛠 Tier Configuration
+## 🔒 Security
 
-All environment-specific settings are managed via a protected JSON file:
-`wp-content/purnukka-config/context.json`
+- **Data Isolation:** All customer-specific data is stored in `purnukka-config/` and is excluded from the Git repository via `.gitignore`.
+- **API Protection:** Synchronization requires a valid Bearer Token.
+- **Restricted Access:** Core logic is stored in `mu-plugins` to prevent accidental deactivation by users.
 
-### Tier Structure:
-- **Solo**: 1 Location (Standard AI & Support)
-- **Growth**: up to 5 Locations (Enhanced AI & Reports)
-- **Infinite**: Unlimited Locations (Enterprise AI & Multi-Calendar)
+## 📡 API Endpoints
 
-> **Important:** The `purnukka-config/` directory is excluded from GitHub deployments to protect local settings during core updates.
-
----
-
-## 📦 Deployment Workflow
-
-1.  **Develop**: Push changes to the `main` branch on GitHub.
-2.  **Deploy**: GitHub Actions syncs the `mu-plugins` to all target environments (Master, Solo, Growth, Infinite).
-3.  **Inherit**: All child sites receive the core updates immediately while keeping their unique `context.json` settings intact.
+### Configuration Sync
+- **URL:** `POST /wp-json/purnukka/v1/sync`
+- **Auth:** `Authorization: Bearer <TOKEN>`
+- **Payload:** Full `context.json` object.
 
 ---
-
-## 📜 Version History
-- **v0.5**: Refined AI Controller with English-first logic.
-- **v0.4**: Integrated Tier-based Access Control and dynamic branding.
-- **v0.2**: Initial GitHub Actions deployment setup.
-## 🛎️ Check-in & Matkustajailmoitus (UI)
-
-Tämä komponentti hoitaa dynaamisen lisähenkilöiden laskennan ja ohjauksen kassalle. Se on eriytetty kassan taustalogiikasta ylläpidon helpottamiseksi.
-
-### Käyttöönotto Child-sivustolla
-Lisää haluamallesi sivulle seuraava shortcode:
-
-`[purnukka_checkin hinta="30" minimi="2" tuote_id="276"]`
-
-### Parametrit:
-* `hinta`: Perushinta per yö (oletus 30). Laskee automaattisesti portaat: 3-6 yötä (20€), 7-13 yötä (15€), 14+ yötä (10€).
-* `minimi`: Minimiyöpyminen, joka pakotetaan laskurissa (oletus 2).
-* `tuote_id`: WooCommerce-tuotteen ID, joka vastaa 1€ arvoista "Purnukka Flex" -tuotetta (Master-oletus: 276).
-* `otsikko`: Vaihtoehtoinen tervetulotoivotus (oletus: "Tervetuloa kotiin").
-
-### Tiedostot:
-* `mu-plugins/purnukka-checkin-ui.php`: Käyttöliittymä, laskentalogiikka (JS) ja tyylit (CSS).
----
-*Created and maintained by Purn
+Developed by Purnukka. Designed for scalability and ease of use.

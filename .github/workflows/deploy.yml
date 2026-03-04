@@ -23,13 +23,14 @@ jobs:
           local-dir: ./
           protocol: ftp
           port: 21
+          # MUOKATTU EXCLUDE-LISTA
           exclude: |
             .git/**
             .github/**
             .vscode/**
             .gitignore
             README.md
-            sftp.json
+            MASTER_PLAN.md
+            purnukka-config/*.json
             templates/**
             **/node_modules/**
-            purnukka-config/**

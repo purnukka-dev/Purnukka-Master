@@ -1,27 +1,25 @@
 # 1. Ignore everything by default
 /*
 
-# 2. Allow Purnukka-specific configuration and documentation
-!/purnukka-config/
-!/.vscode/
+# 2. Basic Allowances
 !/.gitignore
 !README.md
-# Sallitaan GitHub Actions -automaatiokansio
+!/templates/
 !/.github/
 !/.github/workflows/
 !/.github/workflows/*
-# Sallitaan kansio, mutta KIELLETÄÄN sftp-yhteystiedot
 !/.vscode/
 .vscode/sftp.json
-# 3. Allow mu-plugins folder but ignore its general content
+
+# 3. Purnukka Stack - Modular Engine (New Structure)
 !/mu-plugins/
 /mu-plugins/*
+# Sallitaan loader ja koko moottorin kansio
+!/mu-plugins/purnukka-stack-loader.php
+!/mu-plugins/purnukka-stack/
+!/mu-plugins/purnukka-stack/**
 
-# 4. EXPLICITLY ALLOW ONLY THE CORE FOUR PLUGINS
-!/mu-plugins/purnukka-stack-core.php
-!/mu-plugins/purnukka-stack-access-control.php
-!/mu-plugins/purnukka-stack-ai-connector.php
-!/mu-plugins/purnukka-stack-branding.php
-!/mu-plugins/purnukka-stack-checkout-logic.php
-!/mu-plugins/purnukka-checkin-ui.php
-!/templates/
+# 4. Purnukka Config - Security Gate
+!/purnukka-config/
+# ESTETÄÄN kaikki JSON-tiedostot (asiakasdata)
+purnukka-config/*.json
