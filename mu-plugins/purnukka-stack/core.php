@@ -3,19 +3,39 @@ if (!defined('ABSPATH')) exit;
 
 /**
  * Purnukka Core - Keskusyksikkö.
- * Version: 1.5.2 - Global Object Sync.
+ * TÄYSI VERSIO - EI KARSINTAA.
  */
 class Purnukka_Core {
-    public $config = []; // Käytetään tätä moduulien yhteensopivuuteen
-    public $context = []; // Fallback
-    public $active_modules = [];
+    public $config = [];
+    public $context = [];
+    public $modules = [];
+    private static $instance = null;
+
+    public static function instance() {
+        if (is_null(self::$instance)) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
     public function __construct() {
+        // Määritellään polut ja urlit heti, jotta assettien ja näkymien lataus onnistuu
+        if (!defined('PURNUKKA_STACK_PATH')) {
+            define('PURNUKKA_STACK_PATH', plugin_dir_path(__FILE__));
+        }
+        if (!defined('PURNUKKA_STACK_URL')) {
+            define('PURNUKKA_STACK_URL', content_url('mu-plugins/purnukka-stack/'));
+        }
+
         $this->load_config();
-        $this->boot_modules();
         
-        add_action('admin_menu', [$this, 'register_admin_panel']);
-        add_action('wp_ajax_update_purnukka_feature', [$this, 'handle_feature_switch']);
+        // Asetetaan globaali muuttuja, jota views/admin-dashboard.php ja moduulit kutsuvat
+        $GLOBALS['purnukka'] = $this;
+
+        $this->init_modules();
+        
+        // Varmistetaan, että päävalikko ladataan
+        add_action('admin_menu', array($this, 'add_admin_menu'), 1);
     }
 
     private function load_config() {
@@ -26,62 +46,68 @@ class Purnukka_Core {
             $decoded = json_decode($json_data, true);
             if (json_last_error() === JSON_ERROR_NONE) {
                 $this->config = $decoded;
-                $this->context = $decoded; // Synkataan molemmat
+                $this->context = $decoded; // Synkronointi molemmille nimille
                 return;
             }
         }
         
-        // Fail-safe jos tiedosto puuttuu
-        $this->config = ['features' => []];
+        // Fail-safe jos tiedosto puuttuu tai on rikki
+        $this->config = array('product' => array('tier' => 'Solo'), 'features' => array());
         $this->context = &$this->config;
     }
 
-    private function boot_modules() {
-        $features = $this->config['features'] ?? [];
-        foreach ($features as $module => $enabled) {
-            if ($enabled) {
-                $module_file = __DIR__ . "/modules/{$module}.php";
-                if (file_exists($module_file)) {
-                    include_once $module_file;
-                    $this->active_modules[] = $module;
-                    
-                    // Jos moduuli on luokka, alustetaan se
-                    $class_name = 'Purnukka_' . str_replace(' ', '_', ucwords(str_replace('-', ' ', $module)));
-                    if (class_exists($class_name)) {
-                        new $class_name($this);
-                    }
-                }
+    private function init_modules() {
+        $module_dir = PURNUKKA_STACK_PATH . 'modules/';
+        if (!is_dir($module_dir)) return;
+
+        $files = glob($module_dir . '*.php');
+        foreach ($files as $file) {
+            require_once $file;
+            $base_name = basename($file, '.php');
+            $class_name = 'Purnukka_' . str_replace(' ', '_', ucwords(str_replace('-', ' ', $base_name)));
+            
+            if (class_exists($class_name)) {
+                // Alustetaan kaikki moduulit, jotta ne voivat rekisteröidä omat hookkinsa
+                $this->modules[$base_name] = new $class_name($this);
             }
         }
     }
 
-    public function register_admin_panel() {
+    public function add_admin_menu() {
+        // Luodaan päävalikko, joka lataa dashboardin
         add_menu_page(
-            'Purnukka', 'Purnukka', 'manage_options', 'purnukka-stack', 
-            [$this, 'render_dashboard'], 'dashicons-admin-generic', 2
+            'Purnukka Stack',
+            'Purnukka',
+            'manage_options',
+            'purnukka-stack',
+            array($this, 'render_dashboard'),
+            'dashicons-admin-home',
+            2
         );
     }
 
     public function render_dashboard() {
-        $view = __DIR__ . '/views/admin-dashboard.php';
-        if (file_exists($view)) {
-            include_once $view;
+        // Tarjotaan data näkymälle täsmälleen siinä muodossa kuin se oli aamulla
+        $config = $this->config;
+        $view_file = PURNUKKA_STACK_PATH . 'views/admin-dashboard.php';
+        
+        if (file_exists($view_file)) {
+            include $view_file;
         } else {
-            echo "Dashboard view missing.";
+            echo '<div class="wrap"><h1>Purnukka Stack</h1><p>Näkymää ei löytynyt: ' . esc_html($view_file) . '</p></div>';
         }
     }
 
-    // Helpperi syvälle JSON-hakuun (estää kaatumisen jos avain puuttuu)
-    public function get_context($path, $default = null) {
+    public function get_config($key, $default = null) {
+        $keys = explode('.', $key);
         $current = $this->config;
-        $keys = explode('.', $path);
-        foreach ($keys as $key) {
-            if (!isset($current[$key])) return $default;
-            $current = $current[$key];
+        foreach ($keys as $i_key) {
+            if (!isset($current[$i_key])) return $default;
+            $current = $current[$i_key];
         }
         return $current;
     }
 }
 
-// ALUSTUS: Tämä on se mitä moduulit tarvitsevat
-$GLOBALS['purnukka'] = new Purnukka_Core();
+// Käynnistys
+Purnukka_Core::instance();
