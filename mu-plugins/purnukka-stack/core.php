@@ -1,6 +1,6 @@
 <?php
 /**
- * Purnukka_Core Class - Robust Master Edition + Hub Sync API
+ * Purnukka_Core Class - Robust Master Edition
  */
 
 if (!defined('ABSPATH')) exit;
@@ -18,9 +18,6 @@ class Purnukka_Core {
         
         add_action('admin_menu', [$this, 'register_admin_panel']);
         add_action('wp_ajax_update_purnukka_feature', [$this, 'handle_feature_switch']);
-        
-        // Rekisteröidään API-päätepiste Hub-synkronointia varten
-        add_action('rest_api_init', [$this, 'register_hub_api']);
     }
 
     private function load_config() {
@@ -46,74 +43,10 @@ class Purnukka_Core {
             if ($enabled) {
                 $module_file = __DIR__ . "/modules/{$module}.php";
                 if (file_exists($module_file)) {
-                    try {
-                        include_once $module_file;
-                        // Dynaaminen luokan alustus jos luokka on määritelty
-                        $class_name = 'Purnukka_' . str_replace(' ', '_', ucwords(str_replace('-', ' ', $module)));
-                        if (class_exists($class_name)) {
-                            new $class_name($this);
-                        }
-                        $this->active_modules[] = $module;
-                    } catch (Throwable $e) {
-                        error_log("Purnukka Module Load Fail ($module): " . $e->getMessage());
-                    }
+                    include_once $module_file;
+                    $this->active_modules[] = $module;
                 }
             }
-        }
-    }
-
-    /**
-     * Rekisteröidään REST API Hubia varten
-     * Endpoint: /wp-json/purnukka/v1/sync
-     */
-    public function register_hub_api() {
-        register_rest_route('purnukka/v1', '/sync', [
-            'methods'             => 'POST',
-            'callback'            => [$this, 'handle_hub_sync'],
-            'permission_callback' => [$this, 'verify_hub_request'],
-        ]);
-    }
-
-    /**
-     * Varmistetaan Hub-pyynnön oikeellisuus
-     */
-    public function verify_hub_request($request) {
-        // Tähän voidaan myöhemmin lisätä dynaaminen API-key tarkistus
-        // Toistaiseksi sallitaan manage_options tai globaali vakio
-        return current_user_can('manage_options') || defined('PURNUKKA_HUB_SYNC');
-    }
-
-    /**
-     * Käsitellään Hubista tuleva JSON-syöte (Laajennettava malli)
-     */
-    public function handle_hub_sync($request) {
-        $new_data = $request->get_json_params();
-        
-        if (empty($new_data)) {
-            return new WP_Error('no_data', 'Hub sent empty JSON', ['status' => 400]);
-        }
-
-        /**
-         * array_replace_recursive pitää huolen, että uusi data päivittää vain ne kohdat,
-         * mitkä Hub lähettää. Jos Hub lähettää vain "property_info", muut lohkot
-         * kuten "ai_config" säilyvät ennallaan.
-         */
-        $this->config = array_replace_recursive($this->config, $new_data);
-
-        $success = file_put_contents(
-            $this->config_path, 
-            json_encode($this->config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
-            LOCK_EX 
-        );
-
-        if ($success !== false) {
-            return new WP_REST_Response([
-                'status'  => 'success',
-                'message' => 'Context updated via Hub API',
-                'updated_keys' => array_keys($new_data)
-            ], 200);
-        } else {
-            return new WP_Error('write_error', 'Disk write error during sync', ['status' => 500]);
         }
     }
 
