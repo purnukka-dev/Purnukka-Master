@@ -1,39 +1,35 @@
 # ⚓ Purnukka Group Oy: MASTER_PLAN.md
 
-**Päivitetty:** 5.3.2026 (Päivä 1: Generisointi ja Solo-muotti)
+**Päivitetty:** 5.3.2026 (Päivä 1: Generisointi ja Pomminvarma muotti)
 
 ## 🏢 Yritys & Operatiivinen hallinto
 - **Yhtiö:** Purnukka Group Oy (3600777-3).
 - **Omistus:** Perustaja 25%, Kati 25%, Isäukko 50%.
 - **Hallinto:** Kati hoitaa laskutuksen (Revolut Business) ja muiden osakkaiden valtuutuksella maksuliikenteen.
 - **Kirjanpito:** Kitsas (Työpöytäsovellus).
-- **Strategia:** 0 € investointitavoite. Kulut vain perustellusti (esim. 20i Reseller 25 -paketti).
-
-## 🎯 Liiketoimintayksiköt (The Trinity)
-
-### 1. Purnukka Rental (Majoitusratkaisut)
-- **Malli:** Solo-optimoitu geneerinen core.
-- **Tekniikka:** WordPress + MotoPress Booking + WooCommerce + Stripe.
-- **Tavoite:** Automatisoida yksittäiset kohteet (kuten pilotit) skaalautuvaksi tuotteeksi.
-
-### 2. Purnukka Property (Kiinteistösijoittaminen)
-- **Malli:** Lead Generation & Affiliate -bisnes.
-- **Kumppanit:** Brokla ja Montenegro Real Estate.
-- **Suhdeverkosto:** Perustajan oma sijoituskokemus ja kontaktit Montenegrossa.
-
-### 3. Purnukka Hosting (Infrastruktuuri)
-- **Alusta:** 20i Reseller (Whitelabel).
-- **Infrarakenne:**
-    - `master.purnukka.com`: Kehitysympäristö ("Kulta-instanssi").
-    - `hub.purnukka.com`: **MainWP** (Komentokeskus hallintaan). Tulevaisuudessa API-lähde asiakas-JSONeille.
+- **Strategia:** 0 € investointitavoite. Kulut vain perustellusti.
 
 ## 🏗 Tekninen arkkitehtuuri & Säännöt (Master-muotti)
-1. **Generisointi:** Koodi ei sisällä kiinteitä nimiä, värejä tai sääntöjä. Kaikki asiakaskohtainen data tulee JSON-rakenteesta.
-2. **Context-First:** Moduulit tottelevat `purnukka-config/context.json` -tiedostoa. API-valmius on olemassa `core.php`-tasolla.
-3. **Design System:** Värit, logot ja yritystiedot injektoidaan dynaamisesti (Branding-moduuli).
-4. **Asiakaskohtaisuus:** JSON on aina asiakas- tai instanssikohtainen. Master-koodi vain lukee ja toteuttaa sen.
 
-## 🚀 Päivän opit & Muistiinpanot (AI-muisti)
-- **Master-taso:** Pidetään koodi agnostisena. Ei kytketä sitä yhteen kohteeseen edes puheessa.
-- **Fail-safe:** Core sisältää oletusarvot, jotta saitti ei kaadu vaikka JSON puuttuisi.
-- **API-polku:** API-integraatio on vain noutolohko Coreen; moduulit pysyvät muuttumattomina.
+### 1. Accumulative Logic (EI KARSINTAA)
+- **Sääntö:** Koodia ei saa koskaan vähentää tai "yksinkertaistaa" poistamalla olemassa olevaa toiminnallisuutta (kuten näkymiä, hookkeja tai logiikkaa).
+- **Toteutus:** Uudet ominaisuudet, kuten "lukot" tai geneerisyys, rakennetaan olemassa olevan koodin ympärille tai lisätään siihen.
+- **Varmistus:** Jokainen tiedostopäivitys on peilattava GitHub-repon nykyiseen tilaan, jotta mitään ei häviä.
+
+### 2. Generisointi & Solo-muotti
+- **Sääntö:** Master-koodi ei sisällä kiinteitä nimiä, värejä tai sääntöjä. 
+- **Toteutus:** Kaikki dynaaminen data (branding, email, AI-säännöt) luetaan `context.json` -tiedostosta.
+- **Solo-optimoitu:** Master on valmis tuotemalli, joka skaalautuu JSON-muuttujilla.
+
+### 3. Pomminvarmuus (Fault Tolerance)
+- **Sääntö:** Yksittäinen moduuli tai virheellinen data ei saa kaataa sivustoa.
+- **Toteutus:** Moduulien on käytettävä tyyppitarkistuksia ja fail-safe oletusarvoja, jos JSON-kenttä tai ulkoinen API puuttuu.
+
+## 🎯 Liiketoimintayksiköt
+- **Purnukka Rental:** Majoitusautomaatio (WordPress + MotoPress + Stripe).
+- **Purnukka Property:** Lead Generation (Brokla & Montenegro Real Estate).
+- **Purnukka Hosting:** 20i Reseller + MainWP Hub (tuleva API-keskus).
+
+## 🚀 Päivän opit & Muistiinpanot
+- **Master-taso:** Pidetään koodi agnostisena. Se on tehdas, ei yksittäinen tuote.
+- **Context-First:** JSON on asiakkaan sielu. Hub (API) ampuu tämän datan jokaiselle instanssille omana vastauksenaan.

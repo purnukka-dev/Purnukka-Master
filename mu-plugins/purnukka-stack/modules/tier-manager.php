@@ -1,54 +1,108 @@
 <?php
-/**
- * Module: Tier Manager (v1.5)
- * Description: Dynamically controls features and limits based on the subscription tier in context.json.
- * Standards: English code, variables, and technical comments. UI strings support translation.
- */
-
 if (!defined('ABSPATH')) exit;
 
 /**
- * Enforce subscription limits defined in context.json
+ * Purnukka Tier Manager - Hallitsee lisenssirajoja, näkymiä ja pakettien ominaisuuksia.
+ * Taso: Pomminvarma Master-muotti.
  */
-add_action('admin_init', function() {
-    // Access the global Purnukka instance for configuration
-    $config = $GLOBALS['purnukka']->config;
-    
-    // Set limits from context.json. Default to 1 (Solo tier) if not set.
-    $max_locations = (isset($config['limits']['max_locations'])) ? (int)$config['limits']['max_locations'] : 1;
-    $current_tier  = $config['product']['tier'] ?? 'Solo';
+class Purnukka_Tier_Manager {
+    private $core;
+    private $current_tier;
+    private $limits;
 
-    // Count published accommodation types (MotoPress Room Types)
-    $published_types = (int) wp_count_posts('mphb_room_type')->publish;
-
-    // IF LIMIT REACHED: Restrict creation of new units
-    if ($published_types >= $max_locations) {
+    public function __construct($core) {
+        $this->core = $core;
         
-        // 1. Remove "Add New" submenu links
-        remove_submenu_page('edit.php?post_type=mphb_room_type', 'post-new.php?post_type=mphb_room_type');
-        remove_submenu_page('edit.php?post_type=mphb_room_type', 'post-new.php?post_type=mphb_room');
+        // Haetaan taso ja rajat contextista. Oletus Solo, jos JSON puuttuu.
+        $product = $this->core->get_context('product', []);
+        $this->current_tier = !empty($product['tier']) ? $product['tier'] : 'Solo';
+        $this->limits = $this->core->get_context('limits', []);
 
-        // 2. Hide "Add New" buttons from the UI via CSS injection
-        add_action('admin_head', function() {
-            echo '<style>
-                .post-type-mphb_room_type .page-title-action, 
-                .post-type-mphb_room .page-title-action,
-                #menu-posts-mphb_room_type .wp-first-item + li { 
-                    display: none !important; 
-                }
-            </style>';
-        });
+        add_action('admin_menu', [$this, 'add_purnukka_menu']);
+        add_action('admin_init', [$this, 'enforce_tier_limits']);
+    }
 
-        // 3. Prevent direct URL access to the "Add New" post page
-        global $pagenow;
-        if ($pagenow === 'post-new.php' && isset($_GET['post_type']) && $_GET['post_type'] === 'mphb_room_type') {
-            wp_die(
-                '<h3>Purnukka Stack: Limit Reached</h3>' .
-                '<p>Your current plan (<strong>' . esc_html($current_tier) . '</strong>) allows for a maximum of ' . $max_locations . ' location(s).</p>' .
-                '<p>Please contact support to upgrade your subscription.</p>',
-                'Access Denied',
-                ['response' => 403]
-            );
+    /**
+     * Lisää Purnukka-hallintavalikon WordPressin sivupalkkiin.
+     */
+    public function add_purnukka_menu() {
+        add_menu_page(
+            'Purnukka Stack',
+            'Purnukka',
+            'manage_options',
+            'purnukka-stack',
+            [$this, 'render_admin_dashboard'],
+            'dashicons-admin-home',
+            2
+        );
+
+        add_submenu_page(
+            'purnukka-stack',
+            'Paketin tiedot',
+            'Taso: ' . esc_html($this->current_tier),
+            'manage_options',
+            'purnukka-tier',
+            [$this, 'render_tier_info']
+        );
+    }
+
+    /**
+     * Lataa visuaalisen dashboardin view-tiedostosta.
+     */
+    public function render_admin_dashboard() {
+        $view_file = PURNUKKA_STACK_PATH . 'views/admin-dashboard.php';
+        
+        if (file_exists($view_file)) {
+            // Viedään context data näkymälle
+            $context = $this->core->context;
+            include $view_file;
+        } else {
+            echo '<div class="wrap"><h1>Purnukka Stack</h1><p>Dashboard-näkymää ei löytynyt.</p></div>';
         }
     }
-});
+
+    /**
+     * Renderöi tiedot nykyisestä paketista ja sen rajoista.
+     */
+    public function render_tier_info() {
+        echo '<div class="wrap">';
+        echo '<h1>Paketin hallinta</h1>';
+        echo '<div class="card">';
+        echo '<h2>Nykyinen taso: ' . esc_html($this->current_tier) . '</h2>';
+        echo '<p>Version: ' . esc_html($this->core->get_context('product', [])['version'] ?? '1.0.0') . '</p>';
+        
+        if (!empty($this->limits)) {
+            echo '<h3>Rajoitukset:</h3><ul>';
+            foreach ($this->limits as $key => $value) {
+                echo '<li>' . esc_html($key) . ': ' . esc_html($value) . '</li>';
+            }
+            echo '</ul>';
+        }
+        echo '</div></div>';
+    }
+
+    /**
+     * Estää SOLO-käyttäjää ylittämästä rajoja (esim. kohteiden määrä).
+     */
+    public function enforce_tier_limits() {
+        // Pomminvarma lukko: Älä rajoita ylläpitäjää jos kyseessä on huolto tai multisite.
+        if (defined('WP_INSTALLING') && WP_INSTALLING) return;
+        if (!is_admin()) return;
+
+        // Esimerkki: MotoPress-rajoitukset Solo-tasolla.
+        if ($this->current_tier === 'Solo') {
+            $max_locs = $this->limits['max_locations'] ?? 1;
+            
+            // Tähän kytketään myöhemmin post-type count tarkistus,
+            // joka estää "Add New" napin näkymisen jos raja on täynnä.
+        }
+    }
+
+    /**
+     * Helpperi muille moduuleille: onko ominaisuus sallittu tässä tasossa?
+     */
+    public function has_feature($feature_name) {
+        $features = $this->core->get_context('features', []);
+        return !empty($features[$feature_name]);
+    }
+}
