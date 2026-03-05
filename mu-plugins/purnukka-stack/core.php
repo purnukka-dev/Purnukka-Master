@@ -2,73 +2,86 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Purnukka Core - Keskusyksikkö joka hallitsee dataa ja moduuleita.
- * Versio: 1.5.0 - Solo-optimized generic core.
+ * Purnukka Core - Keskusyksikkö.
+ * Version: 1.5.2 - Global Object Sync.
  */
 class Purnukka_Core {
-    public $context = [];
-    public $modules = [];
-    private static $instance = null;
-
-    public static function instance() {
-        if (is_null(self::$instance)) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
+    public $config = []; // Käytetään tätä moduulien yhteensopivuuteen
+    public $context = []; // Fallback
+    public $active_modules = [];
 
     public function __construct() {
-        $this->load_context();
-        $this->init_modules();
+        $this->load_config();
+        $this->boot_modules();
+        
+        add_action('admin_menu', [$this, 'register_admin_panel']);
+        add_action('wp_ajax_update_purnukka_feature', [$this, 'handle_feature_switch']);
     }
 
-    /**
-     * Lataa konfiguraation paikallisesta tiedostosta.
-     * Tiedosto on Git-ignoroitu asiakasdata (purnukka-config/context.json).
-     */
-    private function load_context() {
+    private function load_config() {
         $config_file = WP_CONTENT_DIR . '/purnukka-config/context.json';
         
         if (file_exists($config_file)) {
-            $json_content = file_get_contents($config_file);
-            $this->context = json_decode($json_content, true);
-        } else {
-            // Turvamekanismi: Oletusarvot estävät virheet jos tiedosto puuttuu.
-            $this->context = [
-                'product' => ['tier' => 'Solo', 'version' => '1.5.0'],
-                'features' => [],
-                'property_info' => ['name' => 'Purnukka Instance'],
-                'design_system' => [
-                    'colors' => ['primary' => '#1a2b28', 'accent' => '#b89b5e', 'text' => '#ffffff']
-                ]
-            ];
+            $json_data = file_get_contents($config_file);
+            $decoded = json_decode($json_data, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->config = $decoded;
+                $this->context = $decoded; // Synkataan molemmat
+                return;
+            }
         }
+        
+        // Fail-safe jos tiedosto puuttuu
+        $this->config = ['features' => []];
+        $this->context = &$this->config;
     }
 
-    /**
-     * Alustaa moduulit jos ne on kytketty päälle contextissa.
-     */
-    private function init_modules() {
-        $module_files = glob(PURNUKKA_STACK_PATH . 'modules/*.php');
-        
-        foreach ($module_files as $file) {
-            require_once $file;
-            $base_name = basename($file, '.php');
-            $class_name = 'Purnukka_' . str_replace(' ', '_', ucwords(str_replace('-', ' ', $base_name)));
-            
-            if (class_exists($class_name)) {
-                // Moduuli ladataan vain jos se on merkitty 'true' features-listassa
-                if (!empty($this->context['features'][$base_name])) {
-                    $this->modules[$base_name] = new $class_name($this);
+    private function boot_modules() {
+        $features = $this->config['features'] ?? [];
+        foreach ($features as $module => $enabled) {
+            if ($enabled) {
+                $module_file = __DIR__ . "/modules/{$module}.php";
+                if (file_exists($module_file)) {
+                    include_once $module_file;
+                    $this->active_modules[] = $module;
+                    
+                    // Jos moduuli on luokka, alustetaan se
+                    $class_name = 'Purnukka_' . str_replace(' ', '_', ucwords(str_replace('-', ' ', $module)));
+                    if (class_exists($class_name)) {
+                        new $class_name($this);
+                    }
                 }
             }
         }
     }
 
-    /**
-     * Hakee arvon context-rakenteesta polun perusteella.
-     */
-    public function get_context($key, $default = null) {
-        return isset($this->context[$key]) ? $this->context[$key] : $default;
+    public function register_admin_panel() {
+        add_menu_page(
+            'Purnukka', 'Purnukka', 'manage_options', 'purnukka-stack', 
+            [$this, 'render_dashboard'], 'dashicons-admin-generic', 2
+        );
+    }
+
+    public function render_dashboard() {
+        $view = __DIR__ . '/views/admin-dashboard.php';
+        if (file_exists($view)) {
+            include_once $view;
+        } else {
+            echo "Dashboard view missing.";
+        }
+    }
+
+    // Helpperi syvälle JSON-hakuun (estää kaatumisen jos avain puuttuu)
+    public function get_context($path, $default = null) {
+        $current = $this->config;
+        $keys = explode('.', $path);
+        foreach ($keys as $key) {
+            if (!isset($current[$key])) return $default;
+            $current = $current[$key];
+        }
+        return $current;
     }
 }
+
+// ALUSTUS: Tämä on se mitä moduulit tarvitsevat
+$GLOBALS['purnukka'] = new Purnukka_Core();
