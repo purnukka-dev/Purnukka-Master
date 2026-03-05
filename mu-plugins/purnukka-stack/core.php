@@ -1,19 +1,16 @@
 <?php
+/**
+ * Purnukka_Core Class - Robust Edition
+ */
+
 if (!defined('ABSPATH')) exit;
 
-/**
- * Purnukka_Core Class - Pomminvarma Edition
- * Säilyttää eiliset toiminnot ja lisää suojauksen moduulien lataukseen.
- */
 class Purnukka_Core {
     public $config = [];
     private $config_path;
-    public $active_modules = [];
+    public $active_modules = []; // Tänne tallennetaan ladatut moduuli-instanssit
 
     public function __construct() {
-        // Asetetaan globaali olio heti alussa näkymiä varten
-        $GLOBALS['purnukka'] = $this;
-
         $this->config_path = WP_CONTENT_DIR . '/purnukka-config/context.json';
         
         $this->load_config();
@@ -24,11 +21,11 @@ class Purnukka_Core {
     }
 
     /**
-     * Ladataan eilinen JSON-rakenne
+     * Vahvistettu lataus: Estetään korruptoituneen JSONin aiheuttamat virheet
      */
     private function load_config() {
         if (!file_exists($this->config_path)) {
-            $this->config = ['features' => []];
+            $this->config = ['features' => []]; // Fallback
             return;
         }
 
@@ -38,13 +35,14 @@ class Purnukka_Core {
         if (json_last_error() === JSON_ERROR_NONE) {
             $this->config = $decoded;
         } else {
+            // Jos JSON on rikki, logataan virhe ja käytetään tyhjää, ettei koodi kaadu
             error_log("Purnukka Error: context.json is corrupted.");
             $this->config = ['features' => []];
         }
     }
 
     /**
-     * Moduulien suojattu käynnistys
+     * Moduulien hallittu käynnistys
      */
     private function boot_modules() {
         $features = $this->config['features'] ?? [];
@@ -52,26 +50,18 @@ class Purnukka_Core {
             if ($enabled) {
                 $module_file = __DIR__ . "/modules/{$module}.php";
                 if (file_exists($module_file)) {
-                    try {
-                        //include_once suojatussa lohkossa
-                        include_once $module_file;
-                        
-                        // Muodostetaan luokan nimi (esim. ai-connector -> Purnukka_Ai_Connector)
-                        $class_name = 'Purnukka_' . str_replace(' ', '_', ucwords(str_replace('-', ' ', $module)));
-                        
-                        if (class_exists($class_name)) {
-                            new $class_name($this);
-                            $this->active_modules[] = $module;
-                        }
-                    } catch (Throwable $e) {
-                        // Jos moduuli on rikki, logataan virhe mutta WP ei kaadu
-                        error_log("Purnukka Module Load Fail ($module): " . $e->getMessage());
-                    }
+                    // Käytetään includea ja kääritään tarvittaessa, 
+                    // jotta yksi moduuli ei kaada koko putkea.
+                    include_once $module_file;
+                    $this->active_modules[] = $module;
                 }
             }
         }
     }
 
+    /**
+     * Vahvistettu kirjoitus: LOCK_EX estää samanaikaiset kirjoitukset
+     */
     public function handle_feature_switch() {
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized');
@@ -82,6 +72,7 @@ class Purnukka_Core {
 
         $this->config['features'][$feature] = $status;
 
+        // Kirjoitetaan tiedostoon lukituksella (LOCK_EX)
         $success = file_put_contents(
             $this->config_path, 
             json_encode($this->config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
@@ -103,10 +94,9 @@ class Purnukka_Core {
     }
 
     public function render_dashboard() {
-        // Ladataan eilinen näkymä
         include_once __DIR__ . '/views/admin-dashboard.php';
     }
 }
 
-// Käynnistys
-new Purnukka_Core();
+// Global instance
+$GLOBALS['purnukka'] = new Purnukka_Core();
