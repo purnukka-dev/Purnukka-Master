@@ -1,10 +1,11 @@
 <?php
+/**
+ * Purnukka_Core Class - Hub-Ready Edition
+ * Säilyttää eiliset toiminnot ja lisää API-valmiuden hub.purnukka.com -synkronointiin.
+ */
+
 if (!defined('ABSPATH')) exit;
 
-/**
- * Purnukka_Core Class - Pomminvarma Edition
- * Säilyttää eiliset toiminnot ja lisää suojauksen moduulien lataukseen.
- */
 class Purnukka_Core {
     public $config = [];
     private $config_path;
@@ -21,14 +22,17 @@ class Purnukka_Core {
         
         add_action('admin_menu', [$this, 'register_admin_panel']);
         add_action('wp_ajax_update_purnukka_feature', [$this, 'handle_feature_switch']);
+        
+        // Rekisteröidään API-päätepiste Hub-synkronointia varten
+        add_action('rest_api_init', [$this, 'register_hub_api']);
     }
 
     /**
-     * Ladataan eilinen JSON-rakenne
+     * Ladataan nykyinen konfiguraatio
      */
     private function load_config() {
         if (!file_exists($this->config_path)) {
-            $this->config = ['features' => []];
+            $this->config = ['features' => [], 'product' => ['tier' => 'Solo']];
             return;
         }
 
@@ -39,12 +43,12 @@ class Purnukka_Core {
             $this->config = $decoded;
         } else {
             error_log("Purnukka Error: context.json is corrupted.");
-            $this->config = ['features' => []];
+            $this->config = ['features' => [], 'product' => ['tier' => 'Solo']];
         }
     }
 
     /**
-     * Moduulien suojattu käynnistys
+     * Moduulien suojattu käynnistys (Pomminvarma try-catch)
      */
     private function boot_modules() {
         $features = $this->config['features'] ?? [];
@@ -53,10 +57,7 @@ class Purnukka_Core {
                 $module_file = __DIR__ . "/modules/{$module}.php";
                 if (file_exists($module_file)) {
                     try {
-                        //include_once suojatussa lohkossa
                         include_once $module_file;
-                        
-                        // Muodostetaan luokan nimi (esim. ai-connector -> Purnukka_Ai_Connector)
                         $class_name = 'Purnukka_' . str_replace(' ', '_', ucwords(str_replace('-', ' ', $module)));
                         
                         if (class_exists($class_name)) {
@@ -64,7 +65,6 @@ class Purnukka_Core {
                             $this->active_modules[] = $module;
                         }
                     } catch (Throwable $e) {
-                        // Jos moduuli on rikki, logataan virhe mutta WP ei kaadu
                         error_log("Purnukka Module Load Fail ($module): " . $e->getMessage());
                     }
                 }
@@ -72,6 +72,55 @@ class Purnukka_Core {
         }
     }
 
+    /**
+     * Rekisteröidään REST API Hubia varten
+     * Endpoint: /wp-json/purnukka/v1/sync
+     */
+    public function register_hub_api() {
+        register_rest_route('purnukka/v1', '/sync', [
+            'methods' => 'POST',
+            'callback' => [$this, 'handle_hub_sync'],
+            'permission_callback' => [$this, 'verify_hub_token'],
+        ]);
+    }
+
+    /**
+     * Varmistetaan Hub-pyynnön oikeellisuus (Tämä on laajennettavissa API-avaimella)
+     */
+    public function verify_hub_token($request) {
+        // Tähän voidaan lisätä myöhemmin hub_api_key tarkistus
+        return current_user_can('manage_options') || defined('PURNUKKA_HUB_SYNC');
+    }
+
+    /**
+     * Käsitellään Hubista tuleva JSON-syöte
+     */
+    public function handle_hub_sync($request) {
+        $new_data = $request->get_json_params();
+        
+        if (empty($new_data)) {
+            return new WP_Error('no_data', 'Hub sent empty JSON', ['status' => 400]);
+        }
+
+        // Yhdistetään uusi data olemassa olevaan, jotta ei ylikirjoiteta tärkeitä paikallisia tietoja
+        $this->config = array_replace_recursive($this->config, $new_data);
+
+        $success = file_put_contents(
+            $this->config_path, 
+            json_encode($this->config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+            LOCK_EX 
+        );
+
+        if ($success !== false) {
+            return new WP_REST_Response(['message' => 'Synkronointi onnistui', 'tier' => $this->config['product']['tier']], 200);
+        } else {
+            return new WP_Error('write_error', 'Disk write error during sync', ['status' => 500]);
+        }
+    }
+
+    /**
+     * AJAX-käsittelijä admin-dashboardin kytkimille (Säilytetty ennallaan)
+     */
     public function handle_feature_switch() {
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized');
@@ -103,7 +152,6 @@ class Purnukka_Core {
     }
 
     public function render_dashboard() {
-        // Ladataan eilinen näkymä
         include_once __DIR__ . '/views/admin-dashboard.php';
     }
 }
