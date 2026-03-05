@@ -1,57 +1,73 @@
 <?php
+/**
+ * Module: Branding & Business Identity (v1.5 Master)
+ * Description: Fully automated scaling for PDF, Identity, and UI. Smart UI locking.
+ */
+
 if (!defined('ABSPATH')) exit;
 
 /**
- * Purnukka Branding - Hallitsee visuaalista ilmettä muuttujilla.
+ * 1. LOGIC: PDF & IDENTITY INJECTION
  */
-class Purnukka_Branding {
-    private $core;
+add_filter('option_wpo_wcpdf_settings_general', function($settings) {
+    $config = $GLOBALS['purnukka']->config;
+    if (empty($config['property_info'])) return $settings;
 
-    public function __construct($core) {
-        $this->core = $core;
+    $info = $config['property_info'];
+
+    // Logo sync
+    if (!empty($info['logo_url'])) {
+        $logo_id = attachment_url_to_postid($info['logo_url']);
+        $settings['header_logo'] = $logo_id ?: $info['logo_url'];
+        $settings['header_logo_height'] = '35';
+    }
+
+    // Business identity
+    $settings['shop_name'] = $info['company_name'] ?? '';
+    $settings['shop_address'] = sprintf("%s\n%s %s\n%s", 
+        $info['address'] ?? '', $info['postcode'] ?? '', $info['city'] ?? '', $info['country_code'] ?? 'FI');
+
+    // Footer contact info
+    $footer = [];
+    if (!empty($info['business_id'])) $footer[] = 'Y-tunnus: ' . $info['business_id'];
+    if (!empty($info['email']))       $footer[] = $info['email'];
+    if (!empty($info['phone']))       $footer[] = $info['phone'];
+    $settings['footer_text'] = implode(' | ', $footer);
+
+    // Nuclear Fix (Array override)
+    $settings['shop_address_city']     = ['default' => $info['city'] ?? ''];
+    $settings['shop_address_postcode'] = ['default' => $info['postcode'] ?? ''];
+    $settings['shop_address_country']  = ['default' => $info['country_code'] ?? 'FI'];
+
+    return $settings;
+}, 999);
+
+/**
+ * 2. UI: SMART LOCKING
+ * Since this module is LOADED (On), we lock the manual fields.
+ */
+add_action('admin_footer', function() {
+    $screen = get_current_screen();
+    if ($screen->id !== 'woocommerce_page_wpo_wcpdf_options_page') return;
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        // Kentät jotka ovat JSON-ohjattuja
+        const controlledFields = [
+            'input[name*="shop_name"]',
+            'textarea[name*="shop_address"]',
+            'input[name*="header_logo"]',
+            'textarea[name*="footer_text"]'
+        ];
         
-        add_action('wp_head', [$this, 'inject_brand_styles'], 10);
-        add_action('login_head', [$this, 'inject_brand_styles'], 10);
-        add_filter('admin_footer_text', [$this, 'update_admin_footer']);
-    }
+        $(controlledFields.join(', ')).prop('readonly', true).css({
+            'background-color': '#f0f0f1',
+            'opacity': '0.7',
+            'pointer-events': 'none'
+        });
 
-    /**
-     * Injektoi CSS-muuttujat context.json perusteella.
-     * Käyttää JSON-rakenteen design_system-lohkoa.
-     */
-    public function inject_brand_styles() {
-        $design = $this->core->get_context('design_system', []);
-        $colors = isset($design['colors']) ? $design['colors'] : [];
-        $branding = isset($design['branding']) ? $design['branding'] : [];
-
-        // Hakee arvot JSONista tai käyttää Master-oletuksia
-        $primary = !empty($colors['primary']) ? $colors['primary'] : '#1a2b28';
-        $accent  = !empty($colors['accent'])  ? $colors['accent']  : '#b89b5e';
-        $text    = !empty($colors['text'])    ? $colors['text']    : '#ffffff';
-        $logo    = !empty($branding['logo_url']) ? $branding['logo_url'] : '';
-
-        echo "<style id='purnukka-branding-css'>
-            :root {
-                --purnukka-primary: {$primary};
-                --purnukka-accent: {$accent};
-                --purnukka-text: {$text};
-            }
-            " . ($logo ? "
-            .login h1 a { 
-                background-image: url('{$logo}') !important; 
-                background-size: contain !important; 
-                width: 100% !important; 
-                height: 80px !important;
-            }" : "") . "
-        </style>";
-    }
-
-    /**
-     * Päivittää admin-footerin property_info-datalla.
-     */
-    public function update_admin_footer() {
-        $info = $this->core->get_context('property_info', []);
-        $footer_text = !empty($info['brand_footer']) ? $info['brand_footer'] : 'Powered by Purnukka Stack';
-        echo '<span id="purnukka-footer">' . esc_html($footer_text) . '</span>';
-    }
-}
+        $('.wrap h2').first().after('<div class="notice notice-info is-dismissible"><p><strong>Purnukka Stack:</strong> Branding-automaatio on PÄÄLLÄ (On). Kentät on lukittu muokkaukselta.</p></div>');
+    });
+    </script>
+    <?php
+});
