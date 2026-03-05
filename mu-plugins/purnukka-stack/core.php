@@ -1,6 +1,6 @@
 <?php
 /**
- * Purnukka_Core Class - Robust Edition
+ * Purnukka_Core Class - Robust Master Edition
  */
 
 if (!defined('ABSPATH')) exit;
@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) exit;
 class Purnukka_Core {
     public $config = [];
     private $config_path;
-    public $active_modules = []; // Tänne tallennetaan ladatut moduuli-instanssit
+    public $active_modules = [];
 
     public function __construct() {
         $this->config_path = WP_CONTENT_DIR . '/purnukka-config/context.json';
@@ -20,12 +20,9 @@ class Purnukka_Core {
         add_action('wp_ajax_update_purnukka_feature', [$this, 'handle_feature_switch']);
     }
 
-    /**
-     * Vahvistettu lataus: Estetään korruptoituneen JSONin aiheuttamat virheet
-     */
     private function load_config() {
         if (!file_exists($this->config_path)) {
-            $this->config = ['features' => []]; // Fallback
+            $this->config = ['features' => []];
             return;
         }
 
@@ -35,23 +32,17 @@ class Purnukka_Core {
         if (json_last_error() === JSON_ERROR_NONE) {
             $this->config = $decoded;
         } else {
-            // Jos JSON on rikki, logataan virhe ja käytetään tyhjää, ettei koodi kaadu
             error_log("Purnukka Error: context.json is corrupted.");
             $this->config = ['features' => []];
         }
     }
 
-    /**
-     * Moduulien hallittu käynnistys
-     */
     private function boot_modules() {
         $features = $this->config['features'] ?? [];
         foreach ($features as $module => $enabled) {
             if ($enabled) {
                 $module_file = __DIR__ . "/modules/{$module}.php";
                 if (file_exists($module_file)) {
-                    // Käytetään includea ja kääritään tarvittaessa, 
-                    // jotta yksi moduuli ei kaada koko putkea.
                     include_once $module_file;
                     $this->active_modules[] = $module;
                 }
@@ -59,9 +50,6 @@ class Purnukka_Core {
         }
     }
 
-    /**
-     * Vahvistettu kirjoitus: LOCK_EX estää samanaikaiset kirjoitukset
-     */
     public function handle_feature_switch() {
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized');
@@ -72,7 +60,6 @@ class Purnukka_Core {
 
         $this->config['features'][$feature] = $status;
 
-        // Kirjoitetaan tiedostoon lukituksella (LOCK_EX)
         $success = file_put_contents(
             $this->config_path, 
             json_encode($this->config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
@@ -98,5 +85,5 @@ class Purnukka_Core {
     }
 }
 
-// Global instance
+// Luodaan instanssi globaaliin tilaan Dashboardia varten
 $GLOBALS['purnukka'] = new Purnukka_Core();
