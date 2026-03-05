@@ -1,6 +1,6 @@
 # ⚓ Purnukka Group Oy: MASTER_PLAN.md
 
-**Päivitetty:** 5.3.2026 (Päivä 1: Perustus ja Strategia)
+**Päivitetty:** 5.3.2026 (Päivä 1: Generisointi ja Solo-muotti)
 
 ## 🏢 Yritys & Operatiivinen hallinto
 - **Yhtiö:** Purnukka Group Oy (3600777-3).
@@ -12,29 +12,28 @@
 ## 🎯 Liiketoimintayksiköt (The Trinity)
 
 ### 1. Purnukka Rental (Majoitusratkaisut)
-- **Lippulaiva:** `villapurnukka.com` (Ensimmäinen "Solo"-asiakas, 200 €/kk).
+- **Malli:** Solo-optimoitu geneerinen core.
 - **Tekniikka:** WordPress + MotoPress Booking + WooCommerce + Stripe.
-- **Tavoite:** Muuttaa yksittäiset majoituskohteet automaattisiksi kassakoneiksi.
+- **Tavoite:** Automatisoida yksittäiset kohteet (kuten pilotit) skaalautuvaksi tuotteeksi.
 
 ### 2. Purnukka Property (Kiinteistösijoittaminen)
 - **Malli:** Lead Generation & Affiliate -bisnes.
-- **Kumppanit:** [Brokla](https://brokla.com/) ja [Montenegro Real Estate](https://montenegro-real-estate.com/).
+- **Kumppanit:** Brokla ja Montenegro Real Estate.
 - **Suhdeverkosto:** Perustajan oma sijoituskokemus ja kontaktit Montenegrossa.
 
 ### 3. Purnukka Hosting (Infrastruktuuri)
 - **Alusta:** 20i Reseller (Whitelabel).
-- **Domainit:** `purnukka.com` (Landing page), `purnukka.fi`.
 - **Infrarakenne:**
     - `master.purnukka.com`: Kehitysympäristö ("Kulta-instanssi").
-    - `hub.purnukka.com`: **MainWP** (Komentokeskus kaikkien saittien hallintaan).
+    - `hub.purnukka.com`: **MainWP** (Komentokeskus hallintaan). Tulevaisuudessa API-lähde asiakas-JSONeille.
 
-## 🏗 Tekninen arkkitehtuuri & Säännöt
-1. **Ei huttua:** Jos jokin ei edistä bisnestä tai säästä rahaa/aikaa, se skipataan.
-2. **Context-First:** Koodi on vakioitu (Git), mutta yksilöllisyys (Branding, Tier, API-avaimet) luetaan `purnukka-config/context.json` -tiedostosta.
-3. **Control:** SMTP-asetukset ja kriittiset MU-pluginit lukitaan Coren kautta.
-4. **MainWP-yhteensopivuus:** `access-control.php` pidetään sellaisena, että Hub pääsee hallitsemaan Child-saitteja.
+## 🏗 Tekninen arkkitehtuuri & Säännöt (Master-muotti)
+1. **Generisointi:** Koodi ei sisällä kiinteitä nimiä, värejä tai sääntöjä. Kaikki asiakaskohtainen data tulee JSON-rakenteesta.
+2. **Context-First:** Moduulit tottelevat `purnukka-config/context.json` -tiedostoa. API-valmius on olemassa `core.php`-tasolla.
+3. **Design System:** Värit, logot ja yritystiedot injektoidaan dynaamisesti (Branding-moduuli).
+4. **Asiakaskohtaisuus:** JSON on aina asiakas- tai instanssikohtainen. Master-koodi vain lukee ja toteuttaa sen.
 
 ## 🚀 Päivän opit & Muistiinpanot (AI-muisti)
-- **Taso-nimeämiset:** Solo, Growth, Unlimited (työnimet koodissa).
-- **Deploy:** GitHub Actionit hoitavat koodin, mutta eivät koske asiakaskohtaiseen configiin.
-- **Bisneslogiikka:** Purnukka Group Oy on välikäsi, joka automatisoi teknologian ja rahaliikenteen asiakkaan puolesta.
+- **Master-taso:** Pidetään koodi agnostisena. Ei kytketä sitä yhteen kohteeseen edes puheessa.
+- **Fail-safe:** Core sisältää oletusarvot, jotta saitti ei kaadu vaikka JSON puuttuisi.
+- **API-polku:** API-integraatio on vain noutolohko Coreen; moduulit pysyvät muuttumattomina.
