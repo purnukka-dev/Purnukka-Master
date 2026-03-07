@@ -11,30 +11,33 @@ Tämä on dynaaminen kehityskartta. Prioriteetti 1 sisältää kriittiset teknis
 
 ## 🏗️ RAKENNUSJONO (Priorisoidut tehtävät)
 
-### 🔴 Prioriteetti 1: Kriittiset korjaukset & Dynaamisuus (Välittömästi)
-* [x] **Admin Menu Consolidation:** Yhdistetty keskistetysti `Core.php`-tiedostoon.
-* [x] **Path Constants:** `PURNUKKA_STACK_PATH` ja `PURNUKKA_STACK_URL` lisätty loaderiin.
-* [x] **Dynaaminen Villa-logiikka:** MB (Meta Box) + WC (WooCommerce) linkitys toteutettu `purnukka-hub-sync.php` moduulilla.
-* [x] **Hardcode Cleanup:** ID `276` poistettu `purnukka-checkout-logic.php`:sta ja korvattu dynaamisella villojen tunnistuksella.
-* [ ] **Stability Fix:** Lisää `null-check` ennen näkymien include-kutsuja (erityisesti `views/tier-info.php`).
-* [ ] **Context Protection:** Varmista `deploy.yml`, ettei se ylikirjoita asiakkaan `context.json` asetuksia palvelimella.
+### 🔴 Prioriteetti 1: Kriittiset korjaukset & Turvallisuus (Välittömästi)
+* [cite_start][x] **Admin Menu Consolidation:** Yhdistetty keskistetysti `Core.php`-tiedostoon. 
+* [cite_start][x] **Path Constants:** `PURNUKKA_STACK_PATH` ja `PURNUKKA_STACK_URL` lisätty loaderiin. 
+* [cite_start][x] **Dynaaminen Villa-logiikka:** MB + WC linkitys toteutettu `hub-sync.php` moduulilla. 
+* [cite_start][x] **Hardcode Cleanup:** ID `276` poistettu ja korvattu dynaamisella tunnistuksella. 
+* [cite_start][ ] **REST API Security:** Lisää Bearer token -autentikaatio `hub-sync.php` endpointiin (KRIITTINEN). 
+* [cite_start][ ] **Price Dynamization:** Siirrä `checkin-ui.php` kovakoodatut vierashinnat (30€, 20€, jne.) `context.json`-tiedostoon. 
+* [cite_start][ ] **Context Protection Fix:** Päivitä `deploy.yml` varmistamaan, ettei olemassa olevaa `context.json` -tiedostoa ylikirjoiteta. 
+* [cite_start][ ] **Stability Fix:** Lisää `null-check` ennen näkymien include-kutsuja (erityisesti `views/tier-info.php`). 
 
 ### 🟡 Prioriteetti 2: Hub & SaaS (Seuraava vaihe)
-* [ ] **REST API Implementation:** Laajenna `/sync` endpoint kattamaan koko stackin tila ja asetusten haku.
-* [ ] **Consistency Refactor:** Toteuta `constructor injection` ($core-parametri) kaikille moduuleille — poista riippuvuus `$GLOBALS['purnukka']`.
-* [ ] **Package Templates Update:** Laajenna `package-*.json` tiedostoja `features`-avaimilla automaatiota varten.
-* [ ] **Admin Dashboard:** Visualisoi tilastot `views/admin-dashboard.php` tiedostoon.
+* [cite_start][x] **Admin Dashboard:** Visualisointi toteutettu (`views/admin-dashboard.php`). 
+* [cite_start][ ] **Consistency Refactor:** Toteuta `constructor injection` ($core-parametri) kaikille moduuleille poistaaksesi `$GLOBALS['purnukka']` -riippuvuudet (Estää Fatal Errors). 
+* [cite_start][ ] **Feature Switch Whitelist:** Lisää `core.php` handle_feature_switch -funktioon tarkistus sallituista moduuleista. 
+* [cite_start][ ] **REST API Implementation:** Laajenna `/sync` endpoint kattamaan koko stackin tila. 
+* [cite_start][ ] **Tier Access Implementation:** Toteuta varsinainen uudelleenohjaus tai poista tyhjä `check_tier_access()` funktiosta `tier-manager.php`. 
 
 ### 🔵 Prioriteetti 3: Kehitysideat & Visio
-* [ ] **Repo-siivous:** `.vscode/` poisto ja turhien json-templatetien (`package-unlimited.json` jne.) siivous.
-* [ ] **AI-integraatio:** Laajenna `ai-connector.php` vastaamaan vieraiden kysymyksiin dynaamisesti.
-* [ ] **HDMI-Purnukka:** TV-integraatio, session nollaus ja brändätty tervetuloa-näkymä.
-* [ ] **Smart Lock:** Automaattinen koodin lähetys uloskirjautumisen jälkeen.
+* [cite_start][ ] **Security Hardening:** Lisää SRI-hashit (integrity) ulkoisille CDN-latauksille (Font Awesome, Google Fonts) `checkin-ui.php` -tiedostossa. 
+* [cite_start][ ] **Repo-siivous:** `.vscode/` poisto ja turhien json-templatetien siivous. 
+* [cite_start][ ] **AI-integraatio:** Laajenna `ai-connector.php` vastaamaan vieraiden kysymyksiin dynaamisesti. 
+* [cite_start][ ] **HDMI-Purnukka:** TV-integraatio ja brändätty tervetuloa-näkymä. 
 
 ---
 
 ## ⚓ MASTER-SÄÄNNÖT (Muista aina)
-1. **Accumulative Logic:** Ei karsita koodia tai poisteta toiminnallisuuksia ilman lupaa. Pidetään backlog kertyvänä.
-2. **Context-First:** Kaikki dynaaminen data luetaan `context.json` -tiedostosta tai dynaamisista CPT-kentistä.
-3. **Hybridimalli:** Brooklyn-demot ajetaan vain Child-tasolla, Master pidetään teknisenä ytimenä.
-4. **Visuaalisuus:** Älä muuta ikoneita tai tekstejä ilman erillistä lupaa.
+1. **Accumulative Logic:** Ei karsita koodia tai poisteta toiminnallisuuksia ilman lupaa. [cite_start]Pidetään backlog kertyvänä. 
+2. [cite_start]**Context-First:** Kaikki dynaaminen data luetaan `context.json` -tiedostosta tai dynaamisista CPT-kentistä. 
+3. [cite_start]**Hybridimalli:** Brooklyn-demot ajetaan vain Child-tasolla, Master pidetään teknisenä ytimenä. 
+4. [cite_start]**Visuaalisuus:** Älä muuta ikoneita tai tekstejä ilman erillistä lupaa.

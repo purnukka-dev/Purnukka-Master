@@ -1,8 +1,8 @@
 <?php
 /**
- * Module: Purnukka Hub Sync (v1.6.0)
- * Description: Dynaaminen Villa-luonti (Meta Box) ja WC-tuotelinkitys juoksevalla slugilla.
- * File: purnukka-hub-sync.php
+ * Module: Hub Sync (v1.7.0)
+ * Description: Dynaaminen Villa-luonti Bearer Token -suojauksella.
+ * File: hub-sync.php
  */
 
 if (!defined('ABSPATH')) exit;
@@ -18,8 +18,30 @@ class Purnukka_Hub_Sync {
         register_rest_route('purnukka/v1', '/sync-villa', [
             'methods' => 'POST',
             'callback' => [$this, 'handle_villa_sync'],
-            'permission_callback' => '__return_true', // Tuotannossa API-key tarkistus tähän
+            'permission_callback' => [$this, 'validate_api_token'],
         ]);
+    }
+
+    /**
+     * KRIITTINEN: Bearer Token -tunnistautuminen (Analyysin kohta 1)
+     */
+    public function validate_api_token($request) {
+        $auth_header = $request->get_header('Authorization');
+        
+        // Haetaan odotettu token configista (oletuksena turvallinen fallback)
+        $config = $GLOBALS['purnukka']->config;
+        $expected_token = $config['api_token'] ?? '';
+
+        if (empty($expected_token)) {
+            error_log('Purnukka Alert: API Token is not set in context.json!');
+            return new WP_Error('rest_forbidden', 'API setup incomplete.', ['status' => 401]);
+        }
+
+        if ($auth_header !== 'Bearer ' . $expected_token) {
+            return new WP_Error('rest_forbidden', 'Invalid API Token.', ['status' => 403]);
+        }
+
+        return true;
     }
 
     public function handle_villa_sync($request) {
@@ -32,7 +54,7 @@ class Purnukka_Hub_Sync {
         // 1. Luodaan tai haetaan Villa (Meta Box CPT)
         $villa_id = $this->get_or_create_villa($slug, $title);
 
-        // 2. Päivitetään dynaamiset Meta Box -kentät API-datalla
+        // 2. Päivitetään dynaamiset Meta Box -kentät
         update_post_meta($villa_id, 'purnukka_max_capacity', intval($params['max_capacity'] ?? 2));
         update_post_meta($villa_id, 'purnukka_base_guests', intval($params['base_guests'] ?? 2));
         update_post_meta($villa_id, 'purnukka_base_price', floatval($params['price'] ?? 100));
@@ -81,5 +103,4 @@ class Purnukka_Hub_Sync {
     }
 }
 
-// Alustetaan moduuli
 new Purnukka_Hub_Sync();
