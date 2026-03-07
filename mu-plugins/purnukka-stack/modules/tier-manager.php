@@ -1,24 +1,29 @@
 <?php
 /**
- * Module: Tier Manager (v1.6.1)
+ * Module: Tier Manager (v1.7.5 MASTER)
  * Description: Alkuperäinen laaja logiikka palautettu + Stability Fixit lisätty.
- * File: tier-manager.php
+ * Refactor: Constructor Injection.
  */
 
 if (!defined('ABSPATH')) exit;
 
 class Purnukka_Tier_Manager {
     
+    private $core;
+
     // Pidetään kaikki alkuperäiset muuttujat
     public $current_tier;
     public $tier_data = [];
     public $available_features = [];
 
-    public function __construct() {
+    public function __construct($core) {
+        if (!$core) return;
+        $this->core = $core;
+
         // Alkuperäinen alustuslogiikka
         $this->load_tier_context();
         
-        // Core.php hoitaa nyt päävalikon, mutta pidetään moduulin oma init-logiikka ennallaan
+        // Pidetään moduulin oma init-logiikka ennallaan
         add_action('admin_init', [$this, 'check_tier_access']);
         
         // Alkuperäiset filtterit ja hookit, joita moduuli tarvitsee
@@ -29,11 +34,10 @@ class Purnukka_Tier_Manager {
      * Alkuperäinen laaja kontekstin lataus
      */
     private function load_tier_context() {
-        if (!isset($GLOBALS['purnukka']) || empty($GLOBALS['purnukka']->config)) {
-            return;
-        }
+        // Haetaan konfiguraatio core-instanssista (Consistency Refactor)
+        $config = $this->core->config;
+        if (empty($config)) return;
 
-        $config = $GLOBALS['purnukka']->config;
         $this->current_tier = $config['tier'] ?? 'starter';
         
         // Haetaan pakettitiedot templates-kansiosta (Alkuperäinen toiminnallisuus)
@@ -77,7 +81,6 @@ class Purnukka_Tier_Manager {
 
     /**
      * STABILITY FIX: Turvallinen näkymän lataus
-     * Kutsutaan Core.php:sta. Nyt sisältää null-checkin, mutta ei poista muuta.
      */
     public function render_tier_info() {
         $view_path = PURNUKKA_STACK_PATH . 'views/tier-info.php';
@@ -92,18 +95,3 @@ class Purnukka_Tier_Manager {
         } else {
             // Vain jos tiedosto puuttuu, näytetään virheilmoitus Fatal Errorin sijaan
             echo '<div class="notice notice-warning is-dismissible">';
-            echo '<p><strong>Purnukka Stack:</strong> Näkymätiedosto <code>views/tier-info.php</code> puuttuu.</p>';
-            echo '</div>';
-        }
-    }
-
-    /**
-     * Alkuperäiset apufunktiot (esim. tason päivitys, jos sellaisia oli)
-     */
-    public function get_tier_limit($limit_key) {
-        return $this->tier_data['limits'][$limit_key] ?? 0;
-    }
-}
-
-// Alustetaan moduuli
-new Purnukka_Tier_Manager();

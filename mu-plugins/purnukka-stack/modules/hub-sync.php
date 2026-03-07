@@ -1,16 +1,20 @@
 <?php
 /**
- * Module: Hub Sync (v1.7.0)
+ * Module: Hub Sync (v1.7.5 MASTER)
  * Description: Dynaaminen Villa-luonti Bearer Token -suojauksella.
- * File: hub-sync.php
+ * Refactor: Constructor Injection.
  */
 
 if (!defined('ABSPATH')) exit;
 
 class Purnukka_Hub_Sync {
+    private $core;
     private $post_type = 'villa';
 
-    public function __construct() {
+    public function __construct($core) {
+        if (!$core) return;
+        $this->core = $core;
+
         add_action('rest_api_init', [$this, 'register_sync_endpoints']);
     }
 
@@ -23,13 +27,13 @@ class Purnukka_Hub_Sync {
     }
 
     /**
-     * KRIITTINEN: Bearer Token -tunnistautuminen (Analyysin kohta 1)
+     * KRIITTINEN: Bearer Token -tunnistautuminen (Säilytetty alkuperäinen logiikka)
      */
     public function validate_api_token($request) {
         $auth_header = $request->get_header('Authorization');
         
-        // Haetaan odotettu token configista (oletuksena turvallinen fallback)
-        $config = $GLOBALS['purnukka']->config;
+        // Haetaan odotettu token coren konfiguraatiosta (Consistency Refactor)
+        $config = $this->core->config;
         $expected_token = $config['api_token'] ?? '';
 
         if (empty($expected_token)) {
@@ -84,6 +88,8 @@ class Purnukka_Hub_Sync {
     }
 
     private function sync_linked_product($villa_id, $params) {
+        if (!class_exists('WC_Product_Simple')) return 0;
+
         $product_id = get_post_meta($villa_id, '_linked_product_id', true);
         
         if (!$product_id || !get_post($product_id)) {
@@ -97,10 +103,12 @@ class Purnukka_Hub_Sync {
             $product = wc_get_product($product_id);
         }
 
-        $product->set_regular_price(floatval($params['price'] ?? 100));
-        $product->save();
-        return $product->get_id();
+        if ($product) {
+            $product->set_regular_price(floatval($params['price'] ?? 100));
+            $product->save();
+            return $product->get_id();
+        }
+        
+        return 0;
     }
 }
-
-new Purnukka_Hub_Sync();

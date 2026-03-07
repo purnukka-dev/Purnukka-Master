@@ -1,44 +1,43 @@
-# Purnukka Stack v1.5
+# ⚡ Purnukka Stack v1.6.0 MASTER
 
-Purnukka Stack is a modular SaaS engine designed for high-end accommodation management. It enables property owners to manage branding, AI-driven guest communication, and automated checkout processes across multiple properties through a centralized Hub.
+Purnukka Stack is a robust, modular SaaS engine designed for high-end short-term rental (STR) management. It centralizes property logic, branding, and automation into a stable "Master Core" architecture.
 
-## 🏗 Architecture Overview
+## 🏗 Architecture Overview (v1.6.0)
 
-The system follows a modular "Conductor-Module" pattern:
+The system uses a **Dependency Injection** pattern to ensure stability and prevent Fatal Errors:
 
-- **The Loader** (`mu-plugins/purnukka-stack-loader.php`): The entry point that boots the core engine.
-- **The Core** (`mu-plugins/purnukka-stack/core.php`): The "brain" that reads configuration, manages dynamic module loading, and provides the REST API for Hub synchronization.
-- **Modules** (`mu-plugins/purnukka-stack/modules/`): Independent features (AI, Branding, Tier Management) that can be toggled on/off via the Dashboard or Hub.
-- **Config** (`purnukka-config/context.json`): A local, property-specific JSON file that stores all settings, technical credentials, and property rules.
+- **The Loader** (`mu-plugins/purnukka-stack-loader.php`): Boots the environment and defines path constants.
+- **The Master Core** (`mu-plugins/purnukka-stack/core.php`): The central "Brain". It handles module whitelisting, dependency injection, and centralized configuration loading.
+- **Modular Ecosystem** (`mu-plugins/purnukka-stack/modules/`): 9 independent modules (AI, Branding, Tier Management, etc.) that receive the Core instance upon initialization.
+- **Data Layer** (`wp-content/purnukka-config/context.json`): A property-specific configuration file. Git-ignored for maximum security.
 
 ## 🚀 Key Features
 
-- **Centralized Management:** Sync settings from a centralized Hub via REST API.
-- **AI-Driven Hosting:** Automated guest assistance using property-specific rules and Gemini AI.
-- **Dynamic Branding:** Automatic injection of logos, colors, and legal company information.
-- **Tier-Based Limits:** Built-in support for different subscription levels (Solo, Growth, Infinite).
-- **Technical Automation:** Automated SMTP configuration and checkout logic for WooCommerce.
+- **Master Control:** All modules are class-based and controlled via a central whitelist.
+- **Bearer Security:** API synchronization is protected by Bearer Token authentication, managed via `context.json`.
+- **Hybrid Branding:** Seamlessly injects property-specific identity (logos, colors, business IDs) into UI and PDF documents.
+- **SaaS Guardrails:** Tier-based access control and location limits (Access Control & Tier Manager).
 
 ## 🛠 Installation & Setup
 
-1. **Deploy the Engine:** Upload the `purnukka-stack` folder and the loader to your `wp-content/mu-plugins/` directory.
-2. **Configuration:** Ensure a `purnukka-config/` directory exists in `wp-content/` with a valid `context.json`.
-3. **Setup Data:** Fill in the `property_info` and `technical` (SMTP) sections in `context.json`.
-4. **API Access:** Set your `Authorization: Bearer` token in the Core file to enable remote syncing.
-5. **Hub Integration:** Point your configuration scripts to the `/wp-json/purnukka/v1/sync` endpoint.
+1. **Deploy:** Upload files to `wp-content/mu-plugins/`.
+2. **Context:** Ensure `wp-content/purnukka-config/context.json` exists and is writable.
+3. **API Token:** Set your `api_token` inside `context.json` to enable secure synchronization.
+4. **Activation:** Modules are toggled via the `features` array in the config file or the Purnukka Admin Dashboard.
 
 ## 🔒 Security
 
-- **Data Isolation:** All customer-specific data is stored in `purnukka-config/` and is excluded from the Git repository via `.gitignore`.
-- **API Protection:** Synchronization requires a valid Bearer Token.
-- **Restricted Access:** Core logic is stored in `mu-plugins` to prevent accidental deactivation by site users.
+- **Zero-Inference Protection:** Configuration is stored outside the web root's public visibility and excluded from Git.
+- **Endpoint Protection:** All REST API calls require a `Authorization: Bearer <TOKEN>` header.
+- **System Stability:** Uses a Conductor pattern where modules cannot crash the Core if a dependency is missing.
 
-## 📡 API Endpoints
+## 📡 API Endpoints (v1.6.0)
 
-### Configuration Sync
-- **URL:** `POST /wp-json/purnukka/v1/sync`
+### Villa Synchronization
+- **URL:** `POST /wp-json/purnukka/v1/sync-villa`
 - **Auth:** `Authorization: Bearer <TOKEN>`
-- **Payload:** Full `context.json` object.
+- **Payload:** Dynamic villa data (name, price, capacity, etc.).
 
 ---
-Developed by Purnukka. Designed for scalability and ease of use.
+**Status:** v1.6.0 MASTER - Production Ready.
+Developed by Purnukka Group Oy.
