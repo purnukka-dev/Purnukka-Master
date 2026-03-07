@@ -1,18 +1,54 @@
 <?php
 /**
- * Module: Check-in UI (v1.5 FINAL MASTER PORT)
- * Ported: 1:1 migration from "Gold Welcome Home" version.
- * Code standards: English variables and comments.
+ * Module: Check-in UI (v1.6 DYNAMIC MASTER)
+ * Logic: Includes auto-product creation and cart clearing.
  */
 
 if (!defined('ABSPATH')) exit;
 
+// 1. TAUSTALOGIIKKA: Tuotteen hallinta ja ostoskorin siivous
+final class PurnukkaCheckinEngine {
+    private static $sku = 'purnukka-extra-guest-fee';
+
+    public static function get_product_id() {
+        if (!function_exists('wc_get_product_id_by_sku')) return 0;
+        
+        $product_id = wc_get_product_id_by_sku(self::$sku);
+
+        if (!$product_id) {
+            $product = new WC_Product_Simple();
+            $product->set_name('Additional Guest Fee');
+            $product->set_status('publish');
+            $product->set_catalog_visibility('hidden');
+            $product->set_price('1');
+            $product->set_regular_price('1');
+            $product->set_sku(self::$sku);
+            $product->set_virtual(true);
+            $product_id = $product->save();
+        }
+        return $product_id;
+    }
+
+    public static function init_cart_cleaner() {
+        add_filter('woocommerce_add_to_cart_handler', function($handler, $product_id, $quantity) {
+            if ($product_id == self::get_product_id()) {
+                if (WC()->cart) {
+                    WC()->cart->empty_cart();
+                }
+            }
+            return $handler;
+        }, 10, 3);
+    }
+}
+PurnukkaCheckinEngine::init_cart_cleaner();
+
+// 2. KÄYTTÖLIITTYMÄ: Shortcode
 add_shortcode('purnukka_checkin', function($atts) {
-    // Fetch global data from the v1.5 engine
+    $dynamic_id = PurnukkaCheckinEngine::get_product_id();
     $purnukka_config = $GLOBALS['purnukka']->config;
-    $accent_color    = $purnukka_config['design_system']['colors']['accent'] ?? '#b89b5e';
-    $primary_color   = $purnukka_config['design_system']['colors']['primary'] ?? '#1a2b28';
-    $property_name   = $purnukka_config['property_info']['name'] ?? 'Villa Purnukka';
+    
+    $accent_color  = $purnukka_config['design_system']['colors']['accent'] ?? '#b89b5e';
+    $primary_color = $purnukka_config['design_system']['colors']['primary'] ?? '#1a2b28';
 
     ob_start(); ?>
 
@@ -20,103 +56,25 @@ add_shortcode('purnukka_checkin', function($atts) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
     <style>
-        /* ORIGINAL MASTER STYLING */
+        /* [Alkuperäinen v1.5 Master Styling - Ei muutoksia] */
         .site-content, .entry-content, .post-inner { padding-top: 0 !important; margin-top: 0 !important; }
-
-        .purnukka-welcome-header {
-            background: #ffffff;
-            padding: 30px 20px 10px 20px; 
-            text-align: center;
-            margin-top: -60px !important;
-        }
-
-        .p-brand-label {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            color: <?php echo $accent_color; ?>;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .purnukka-welcome-header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 48px;
-            color: <?php echo $accent_color; ?>; 
-            margin: 0;
-            font-weight: 400;
-            font-style: italic;
-            letter-spacing: -1px;
-        }
-
-        .purnukka-premium-wrapper {
-            font-family: 'Montserrat', sans-serif;
-            max-width: 800px;
-            margin: 0 auto !important;
-            padding: 25px 45px; 
-            background: #ffffff;
-            text-align: center; 
-            box-shadow: 0px 15px 50px rgba(0,0,0,0.06);
-            border-radius: 4px;
-            border: 1px solid #f0f0f0;
-            z-index: 999;
-            position: relative;
-        }
-
+        .purnukka-welcome-header { background: #ffffff; padding: 30px 20px 10px 20px; text-align: center; margin-top: -60px !important; }
+        .p-brand-label { font-family: 'Montserrat', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 5px; color: <?php echo $accent_color; ?>; font-weight: bold; display: block; margin-bottom: 8px; }
+        .purnukka-welcome-header h1 { font-family: 'Playfair Display', serif; font-size: 48px; color: <?php echo $accent_color; ?>; margin: 0; font-weight: 400; font-style: italic; letter-spacing: -1px; }
+        .purnukka-premium-wrapper { font-family: 'Montserrat', sans-serif; max-width: 800px; margin: 0 auto !important; padding: 25px 45px; background: #ffffff; text-align: center; box-shadow: 0px 15px 50px rgba(0,0,0,0.06); border-radius: 4px; border: 1px solid #f0f0f0; z-index: 999; position: relative; }
         .p-top-icon { color: <?php echo $accent_color; ?>; font-size: 28px; margin-bottom: 12px; display: block; }
-
-        .p-step-box {
-            background: #fdfdfd;
-            border: 1px solid #e8e8e8;
-            border-left: 6px solid <?php echo $accent_color; ?>; 
-            padding: 20px 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            text-align: left;
-            margin-top: 20px;
-        }
-
-        .btn-p-dark {
-            background: <?php echo $primary_color; ?>; color: #fff; border: none; padding: 12px 25px;
-            font-weight: bold; text-transform: uppercase; font-size: 11px;
-            cursor: pointer; letter-spacing: 1px; transition: 0.3s;
-        }
+        .p-step-box { background: #fdfdfd; border: 1px solid #e8e8e8; border-left: 6px solid <?php echo $accent_color; ?>; padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; text-align: left; margin-top: 20px; }
+        .btn-p-dark { background: <?php echo $primary_color; ?>; color: #fff; border: none; padding: 12px 25px; font-weight: bold; text-transform: uppercase; font-size: 11px; cursor: pointer; letter-spacing: 1px; transition: 0.3s; }
         .btn-p-dark:hover { background: <?php echo $accent_color; ?>; }
-
         .p-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-
         .p-input-field { background: #fff; border: 1px solid <?php echo $accent_color; ?>; padding: 10px 15px; }
-
-        .p-input-field label {
-            display: block; font-size: 9px; color: <?php echo $accent_color; ?>;
-            text-transform: uppercase; font-weight: bold; margin-bottom: 4px;
-        }
-        .p-input-field label i { margin-right: 6px; }
-
-        .p-input-field input {
-            border: none; width: 100%; font-weight: bold;
-            font-size: 20px; color: <?php echo $primary_color; ?>; outline: none; background: transparent;
-            height: 24px;
-        }
-
+        .p-input-field label { display: block; font-size: 9px; color: <?php echo $accent_color; ?>; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
+        .p-input-field input { border: none; width: 100%; font-weight: bold; font-size: 20px; color: <?php echo $primary_color; ?>; outline: none; background: transparent; height: 24px; }
         .p-price-summary { border-top: 1px solid #f0f0f0; padding-top: 15px; margin-bottom: 20px; text-align: center; }
-
         .p-price-note { font-size: 10px; color: <?php echo $accent_color; ?>; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .p-price-total { font-size: 38px; font-weight: bold; color: <?php echo $primary_color; ?>; display: block; line-height: 1; margin-top: 5px; }
-
-        .btn-p-gold {
-            background: <?php echo $accent_color; ?> !important; 
-            color: #fff !important;
-            border: none; padding: 18px; width: 100%;
-            font-weight: bold; text-transform: uppercase;
-            cursor: pointer; font-size: 13px; letter-spacing: 2px;
-            box-shadow: 0 4px 15px rgba(184, 155, 94, 0.2);
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-p-gold { background: <?php echo $accent_color; ?> !important; color: #fff !important; border: none; padding: 18px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 13px; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(184, 155, 94, 0.2); }
+        .btn-cancel-link { font-size: 11px; color: #999; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block; }
     </style>
 
     <div class="purnukka-welcome-header">
@@ -140,9 +98,8 @@ add_shortcode('purnukka_checkin', function($atts) {
             <button class="btn-p-dark" onclick="toggleFormDisplay()">Yes, add guests</button>
         </div>
 
-        <div id="purnukka-form-view" style="display:none; animation: fadeIn 0.4s ease;">
+        <div id="purnukka-form-view" style="display:none;">
             <h3 style="font-family: 'Playfair Display', serif; font-size: 20px; color: <?php echo $primary_color; ?>; margin-bottom: 15px; text-align:left;">Update Guest Details</h3>
-            
             <div class="p-input-row">
                 <div class="p-input-field">
                     <label><i class="fas fa-users"></i> Additional guests (qty)</label>
@@ -153,16 +110,12 @@ add_shortcode('purnukka_checkin', function($atts) {
                     <input type="number" id="night-count" value="2" min="2" oninput="calculateTotalAmount()">
                 </div>
             </div>
-
             <div class="p-price-summary">
                 <span id="rate-information" class="p-price-note">STANDARD RATE (30€/NIGHT)</span>
                 <span class="p-price-total"><span id="total-sum-display">60</span> €</span>
             </div>
-
             <button class="btn-p-gold" onclick="initiatePayment()">Update and Secure Payment</button>
-            <div style="text-align:center; margin-top:12px;">
-                <span class="btn-cancel-link" onclick="location.reload()">Return to Overview</span>
-            </div>
+            <div style="text-align:center;"><span class="btn-cancel-link" onclick="location.reload()">Return to Overview</span></div>
         </div>
     </div>
 
@@ -175,23 +128,22 @@ add_shortcode('purnukka_checkin', function($atts) {
         const guests = parseInt(document.getElementById('guest-count').value) || 0;
         let nights = parseInt(document.getElementById('night-count').value) || 0;
         if (nights < 2) nights = 2;
-        
         let unitPrice = 30;
         let rateLabel = "STANDARD RATE (30€/NIGHT)";
-        
         if (nights > 2 && nights <= 6) { unitPrice = 20; rateLabel = "MID-STAY BENEFIT (20€/NIGHT)"; }
         else if (nights > 6 && nights <= 13) { unitPrice = 15; rateLabel = "WEEKLY BENEFIT (15€/NIGHT)"; }
         else if (nights >= 14) { unitPrice = 10; rateLabel = "LONG-STAY BENEFIT (10€/NIGHT)"; }
-        
         document.getElementById('total-sum-display').innerText = guests * nights * unitPrice;
         document.getElementById('rate-information').innerText = rateLabel;
     }
     function initiatePayment() {
         const amount = document.getElementById('total-sum-display').innerText;
-        window.location.href = window.location.origin + '/payment-checkout/?add-to-cart=276&quantity=' + amount;
+        const productId = "<?php echo $dynamic_id; ?>";
+        if (parseInt(amount) > 0) {
+            window.location.href = window.location.origin + '/payment-checkout/?add-to-cart=' + productId + '&quantity=' + amount;
+        }
     }
     </script>
-
     <?php
     return ob_get_clean();
 });
