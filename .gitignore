@@ -4,7 +4,7 @@
 # 2. Basic Allowances
 !/.gitignore
 !README.md
-!BACKLOG
+!BACKLOG.md
 !MASTER_PLAN.md
 !/templates/
 !/.github/
