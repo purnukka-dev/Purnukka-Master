@@ -1,6 +1,6 @@
 # ⚡ Purnukka Stack - BACKLOG.md
 
-Tämä on dynaaminen kehityskartta. Prioriteetti 1 sisältää kriittiset tekniset korjaukset, jotta "Puhdas Master-ydin" toteutuu.
+Tämä on dynaaminen kehityskartta. Prioriteetti 1 sisältää kriittiset tekniset korjaukset ja SaaS-automaation peruspilarit.
 
 ---
 
@@ -11,10 +11,12 @@ Tämä on dynaaminen kehityskartta. Prioriteetti 1 sisältää kriittiset teknis
 
 ## 🏗️ RAKENNUSJONO (Priorisoidut tehtävät)
 
-### 🔴 Prioriteetti 1: Kriittiset korjaukset (Välittömästi)
+### 🔴 Prioriteetti 1: Kriittiset korjaukset & Dynaamisuus (Välittömästi)
 * [x] **Admin Menu Consolidation:** Yhdistetty keskistetysti `Core.php`-tiedostoon.
 * [x] **Path Constants:** `PURNUKKA_STACK_PATH` ja `PURNUKKA_STACK_URL` lisätty loaderiin.
-* [ ] **Hardcode Cleanup:** Siirrä tuote-ID `276` pois `checkout-logic.php`:sta ja lue se dynaamisesti `context.json`:sta.
+* [ ] **Dynaaminen Villa-logiikka:** Toteuta MB (Meta Box) + WC (WooCommerce) linkitys, jossa kohteet luodaan APIn kautta juoksevalla slugilla (`villa-1`, `villa-2`).
+* [ ] **MB-kentät dynaamisiksi:** API-ohjaus kentille: nimi, kapasiteetti, max-henkilöt, lisähenkilöraja ja perushinta.
+* [ ] **Hardcode Cleanup:** Poista ID `276` koodista ja vaihda se dynaamiseen hakuun, joka tunnistaa linkitetyn WC-tuotteen villan slugin perusteella.
 * [ ] **Stability Fix:** Lisää `null-check` ennen näkymien include-kutsuja (erityisesti `views/tier-info.php`).
 * [ ] **Context Protection:** Varmista, ettei deploy (`deploy.yml`) ylikirjoita asiakkaan `context.json` asetuksia palvelimella.
 
@@ -34,6 +36,6 @@ Tämä on dynaaminen kehityskartta. Prioriteetti 1 sisältää kriittiset teknis
 
 ## ⚓ MASTER-SÄÄNNÖT (Muista aina)
 1. **Accumulative Logic:** Ei karsita koodia tai poisteta toiminnallisuuksia ilman lupaa. Pidetään backlog kertyvänä.
-2. **Context-First:** Kaikki dynaaminen data (ID:t, värit, tekstit) luetaan `context.json` -tiedostosta.
+2. **Context-First:** Kaikki dynaaminen data (ID:t, värit, tekstit) luetaan `context.json` -tiedostosta tai dynaamisista CPT-kentistä.
 3. **Hybridimalli:** Brooklyn-demot ajetaan vain Child-tasolla, Master pidetään teknisenä ytimenä.
 4. **Visuaalisuus:** Älä muuta ikoneita tai tekstejä ilman erillistä lupaa.
