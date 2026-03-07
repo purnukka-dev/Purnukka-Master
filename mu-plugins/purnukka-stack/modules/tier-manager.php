@@ -95,3 +95,15 @@ class Purnukka_Tier_Manager {
         } else {
             // Vain jos tiedosto puuttuu, näytetään virheilmoitus Fatal Errorin sijaan
             echo '<div class="notice notice-warning is-dismissible">';
+            echo '<p><strong>Purnukka Stack:</strong> Näkymätiedosto <code>views/tier-info.php</code> puuttuu.</p>';
+            echo '</div>';
+        }
+    }
+
+    /**
+     * Alkuperäiset apufunktiot
+     */
+    public function get_tier_limit($limit_key) {
+        return $this->tier_data['limits'][$limit_key] ?? 0;
+    }
+}

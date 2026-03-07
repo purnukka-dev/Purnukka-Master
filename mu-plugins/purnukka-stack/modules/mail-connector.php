@@ -80,7 +80,7 @@ class Purnukka_Mail_Connector {
             });
 
             // Lisätään selkeä Purnukka-ilmoitus yläreunaan
-            $('.wp-mail-smtp-page-title').after(
+            $('.wp-mail-smtp-page-title, .wp-mail-smtp-setting-row-general-mail-from_email').first().after(
                 '<div class="notice notice-info"><p><strong>Purnukka Stack Master Control:</strong> Sähköpostiautomaatio on PÄÄLLÄ (On). Asetukset on lukittu muokkaukselta.</p></div>'
             );
         });

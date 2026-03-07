@@ -75,8 +75,8 @@ class Purnukka_Core {
             wp_send_json_error('Unauthorized');
         }
         
-        $feature = sanitize_text_field($_POST['feature']);
-        $status  = $_POST['status'] === 'true'; 
+        $feature = sanitize_text_field($_POST['feature'] ?? '');
+        $status  = ($_POST['status'] ?? 'false') === 'true'; 
 
         // PDF-ANALYYSI KOHTA 6: Varmistetaan whitelist ennen tallennusta
         $whitelist = ['hub-sync', 'checkout-logic', 'tier-manager', 'branding', 'ai-connector', 'mail-connector', 'checkin-ui', 'upsell-ui', 'access-control'];
@@ -111,4 +111,16 @@ class Purnukka_Core {
         );
     }
 
-    public function
+    public function render_dashboard() {
+        // Ladataan dashboard-näkymä
+        $view_file = __DIR__ . '/views/admin-dashboard.php';
+        if (file_exists($view_file)) {
+            include_once $view_file;
+        } else {
+            echo '<div class="wrap"><h1>Purnukka Stack</h1><p>Dashboard view missing.</p></div>';
+        }
+    }
+}
+
+// Alustetaan globaali instanssi
+$GLOBALS['purnukka'] = new Purnukka_Core();
