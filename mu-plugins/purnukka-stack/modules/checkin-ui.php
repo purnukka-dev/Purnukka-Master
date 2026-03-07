@@ -1,23 +1,21 @@
 <?php
 /**
- * Module: Check-in UI (v1.6.1 DYNAMIC MASTER - HOTFIX)
- * Logic: Includes auto-product creation and SAFER cart clearing.
+ * Module: Check-in UI (v1.6.2 STABLE)
+ * Logic: Full standalone module with safe product management and cart clearing.
  */
 
 if (!defined('ABSPATH')) exit;
 
-// 1. TAUSTALOGIIKKA: Tuotteen hallinta ja vikasietoinen ostoskorin siivous
+// --- 1. MOOTTORI: Tuotehallinta ja Ostoskorin tyhjennys ---
 final class PurnukkaCheckinEngine {
     private static $sku = 'purnukka-extra-guest-fee';
 
-    /**
-     * Hakee tai luo tuotteen dynaamisesti SKU:n perusteella.
-     */
     public static function get_product_id() {
         if (!function_exists('wc_get_product_id_by_sku')) return 0;
         
         $product_id = wc_get_product_id_by_sku(self::$sku);
 
+        // Luodaan tuote automaattisesti, jos sitä ei löydy (esim. uusi kohde)
         if (!$product_id && class_exists('WC_Product_Simple')) {
             $product = new WC_Product_Simple();
             $product->set_name('Additional Guest Fee');
@@ -32,35 +30,30 @@ final class PurnukkaCheckinEngine {
         return $product_id;
     }
 
-    /**
-     * Rekisteröi ostoskorin puhdistuksen vasta kun WordPress ja pluginit ovat valmiita.
-     */
     public static function init_cart_cleaner() {
-        add_action('wp_loaded', function() {
-            // Varmistetaan että WC on ladattu eikä kaadeta sivustoa
-            if (!function_exists('WC') || !WC()->cart) return;
-
-            add_filter('woocommerce_add_to_cart_handler', function($handler, $product_id, $quantity) {
-                $target_id = self::get_product_id();
-                
-                // Jos lisätään tämä nimenomainen lisähenkilötuote, tyhjennetään muu kori
-                if ($target_id > 0 && $product_id == $target_id) {
+        // v1.6.2: Käytetään syvempää koukkua tyhjennykseen kaatumisen estämiseksi
+        add_filter('woocommerce_add_cart_item_data', function($cart_item_data, $product_id) {
+            $target_id = self::get_product_id();
+            
+            // Jos lisätään juuri tämä maksu, tyhjennetään muu ostoskori
+            if ($target_id > 0 && $product_id == $target_id) {
+                if (isset(WC()->cart)) {
                     WC()->cart->empty_cart();
                 }
-                return $handler;
-            }, 10, 3);
-        });
+            }
+            return $cart_item_data;
+        }, 10, 2);
     }
 }
 
-// Käynnistetään moottori
+// Käynnistetään taustalogiikka
 PurnukkaCheckinEngine::init_cart_cleaner();
 
-// 2. KÄYTTÖLIITTYMÄ: Shortcode
+// --- 2. KÄYTTÖLIITTYMÄ: Shortcode [purnukka_checkin] ---
 add_shortcode('purnukka_checkin', function($atts) {
     $dynamic_id = PurnukkaCheckinEngine::get_product_id();
     
-    // Haetaan brändivärit globaalista konfiguraatiosta
+    // Haetaan brändivärit keskitetysti (varmistetaan toimivuus Blueprintissä)
     $purnukka_config = $GLOBALS['purnukka']->config ?? [];
     $accent_color    = $purnukka_config['design_system']['colors']['accent'] ?? '#b89b5e';
     $primary_color   = $purnukka_config['design_system']['colors']['primary'] ?? '#1a2b28';
