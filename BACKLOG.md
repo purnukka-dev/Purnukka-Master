@@ -15,8 +15,8 @@ Tämä on dynaaminen kehityskartta. Prioriteetti 1 sisältää kriittiset teknis
 * [ ] **Admin Menu Consolidation:** Yhdistä kaikki `admin_menu` -rekisteröinnit yhteen pisteeseen (`Core.php`).
 * [ ] **Path Constants:** Lisää `PURNUKKA_STACK_PATH` ja `PURNUKKA_STACK_URL` määritelmät loader-tiedostoon (`mu-plugins/purnukka-stack-loader.php`).
 * [ ] **Stability Fix:** Luo `views/tier-info.php` tai lisää `null-check` ennen include-kutsuja (estää PHP-virheet, jos tiedosto puuttuu).
-* [ ] **Hardcode Cleanup:** Siirrä tuote-ID `276` pois koodista ja sijoita se `purnukka-config/context.json` -tiedostoon.
-* [ ] **Context Protection:** Varmista, ettei deploy (`deploy.yml`) ylikirjoita asiakkaan `context.json` asetuksia.
+* [ ] **Hardcode Cleanup:** Siirrä tuote-ID `276` pois koodista ja sijoita se `purnukka-config/context.json` -tiedostoon dynaamisesti luettavaksi.
+* [ ] **Context Protection:** Varmista, ettei deploy (`deploy.yml`) ylikirjoita asiakkaan `context.json` asetuksia palvelimella.
 
 ### 🟡 Prioriteetti 2: Hub & SaaS (Seuraava vaihe)
 * [ ] **REST API Implementation:** Toteuta `/wp-json/purnukka/v1/sync` endpoint (Mainittu README:ssä, mutta puuttuu koodista). Tämä on kriittinen SaaS-toiminnan kannalta.
@@ -33,7 +33,7 @@ Tämä on dynaaminen kehityskartta. Prioriteetti 1 sisältää kriittiset teknis
 ---
 
 ## ⚓ MASTER-SÄÄNNÖT (Muista aina)
-1. **Accumulative Logic:** Ei karsita koodia tai poisteta toiminnallisuuksia ilman lupaa.
+1. **Accumulative Logic:** Ei karsita koodia tai poisteta toiminnallisuuksia ilman lupaa. Pidetään backlog kertyvänä.
 2. **Context-First:** Kaikki dynaaminen data (ID:t, värit, tekstit) luetaan `context.json` -tiedostosta.
 3. **Hybridimalli:** Brooklyn-demot ajetaan vain Child-tasolla, Master pidetään teknisenä ytimenä.
-4. **Visuaalisuus:** Älä muuta ikoneita tai tekstejä ilman erillistä lupaa.
+4. **Visuaalisuus:**
