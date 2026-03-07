@@ -1,21 +1,24 @@
 <?php
 /**
- * Module: Check-in UI (v1.6 DYNAMIC MASTER)
- * Logic: Includes auto-product creation and cart clearing.
+ * Module: Check-in UI (v1.6.1 DYNAMIC MASTER - HOTFIX)
+ * Logic: Includes auto-product creation and SAFER cart clearing.
  */
 
 if (!defined('ABSPATH')) exit;
 
-// 1. TAUSTALOGIIKKA: Tuotteen hallinta ja ostoskorin siivous
+// 1. TAUSTALOGIIKKA: Tuotteen hallinta ja vikasietoinen ostoskorin siivous
 final class PurnukkaCheckinEngine {
     private static $sku = 'purnukka-extra-guest-fee';
 
+    /**
+     * Hakee tai luo tuotteen dynaamisesti SKU:n perusteella.
+     */
     public static function get_product_id() {
         if (!function_exists('wc_get_product_id_by_sku')) return 0;
         
         $product_id = wc_get_product_id_by_sku(self::$sku);
 
-        if (!$product_id) {
+        if (!$product_id && class_exists('WC_Product_Simple')) {
             $product = new WC_Product_Simple();
             $product->set_name('Additional Guest Fee');
             $product->set_status('publish');
@@ -29,26 +32,38 @@ final class PurnukkaCheckinEngine {
         return $product_id;
     }
 
+    /**
+     * Rekisteröi ostoskorin puhdistuksen vasta kun WordPress ja pluginit ovat valmiita.
+     */
     public static function init_cart_cleaner() {
-        add_filter('woocommerce_add_to_cart_handler', function($handler, $product_id, $quantity) {
-            if ($product_id == self::get_product_id()) {
-                if (WC()->cart) {
+        add_action('wp_loaded', function() {
+            // Varmistetaan että WC on ladattu eikä kaadeta sivustoa
+            if (!function_exists('WC') || !WC()->cart) return;
+
+            add_filter('woocommerce_add_to_cart_handler', function($handler, $product_id, $quantity) {
+                $target_id = self::get_product_id();
+                
+                // Jos lisätään tämä nimenomainen lisähenkilötuote, tyhjennetään muu kori
+                if ($target_id > 0 && $product_id == $target_id) {
                     WC()->cart->empty_cart();
                 }
-            }
-            return $handler;
-        }, 10, 3);
+                return $handler;
+            }, 10, 3);
+        });
     }
 }
+
+// Käynnistetään moottori
 PurnukkaCheckinEngine::init_cart_cleaner();
 
 // 2. KÄYTTÖLIITTYMÄ: Shortcode
 add_shortcode('purnukka_checkin', function($atts) {
     $dynamic_id = PurnukkaCheckinEngine::get_product_id();
-    $purnukka_config = $GLOBALS['purnukka']->config;
     
-    $accent_color  = $purnukka_config['design_system']['colors']['accent'] ?? '#b89b5e';
-    $primary_color = $purnukka_config['design_system']['colors']['primary'] ?? '#1a2b28';
+    // Haetaan brändivärit globaalista konfiguraatiosta
+    $purnukka_config = $GLOBALS['purnukka']->config ?? [];
+    $accent_color    = $purnukka_config['design_system']['colors']['accent'] ?? '#b89b5e';
+    $primary_color   = $purnukka_config['design_system']['colors']['primary'] ?? '#1a2b28';
 
     ob_start(); ?>
 
@@ -56,7 +71,6 @@ add_shortcode('purnukka_checkin', function($atts) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
     <style>
-        /* [Alkuperäinen v1.5 Master Styling - Ei muutoksia] */
         .site-content, .entry-content, .post-inner { padding-top: 0 !important; margin-top: 0 !important; }
         .purnukka-welcome-header { background: #ffffff; padding: 30px 20px 10px 20px; text-align: center; margin-top: -60px !important; }
         .p-brand-label { font-family: 'Montserrat', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 5px; color: <?php echo $accent_color; ?>; font-weight: bold; display: block; margin-bottom: 8px; }
