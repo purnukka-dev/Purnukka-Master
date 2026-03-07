@@ -23,7 +23,7 @@ jobs:
           local-dir: ./
           protocol: ftp
           port: 21
-          # MUOKATTU EXCLUDE-LISTA
+          # OPTIMOITU EXCLUDE-LISTA PURNAKKA STACKILLE
           exclude: |
             .git/**
             .github/**
@@ -31,6 +31,8 @@ jobs:
             .gitignore
             README.md
             MASTER_PLAN.md
-            purnukka-config/*.json
-            templates/**
+            BACKLOG.md
+            # Suojataan vain varsinainen datatiedosto, sallitaan kansion rakenteen päivitys
+            purnukka-config/context.json
+            # Templates-kansiota EI pitäisi excludata, jos haluat pakettien (starter/growth) päivittyvän!
             **/node_modules/**
